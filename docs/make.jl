@@ -32,4 +32,5 @@ write(index_path, index)
 deploydocs(;
     repo="github.com/ericphanson/Asciicast.jl",
     push_preview=true,
+    devbranch="main"
 )
