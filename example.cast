@@ -1,0 +1,4 @@
+{"version":2,"width":80,"height":24,"timestamp":1629074833,"env":{"TERM":"xterm-256color","SHELL":"/bin/zsh"}}
+[0.023300886154174805,"o","hello\r\n"]
+[0.027172088623046875,"o","Let us wait..."]
+[0.8634650707244873,"o","\r\nDone!"]
