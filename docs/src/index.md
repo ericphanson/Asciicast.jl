@@ -5,10 +5,10 @@
 
 ## Example
 
-
 ```@gif
 using Pkg
 Pkg.status()
+1 + 1
 ```
 
 
