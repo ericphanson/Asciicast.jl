@@ -1,7 +1,0 @@
-{"version":2,"width":80,"height":24,"timestamp":1629068519,"env":{"TERM":"xterm-256color","SHELL":"/bin/bash"}}
-[0.565183162689209,"i","using Pkg"]
-[1.3679959774017334,"o","julia> using Pkg\r\n"]
-[1.8723220825195312,"o","\r\n"]
-[4.497392177581787,"i","Pkg.status()"]
-[5.087007999420166,"o","julia> Pkg.status()\r\n"]
-[5.58712911605835,"o","      Status `~/work/Asciicast.jl/Asciicast.jl/docs/Project.toml`\r\n  [2600d445] Asciicast v0.1.0 `~/work/Asciicast.jl/Asciicast.jl`\r\n  [e30172f5] Documenter v0.27.5\r\n\r\n"]
