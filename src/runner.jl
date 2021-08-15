@@ -1,8 +1,11 @@
 using Markdown
+using REPL
+using IOCapture
 using Documenter
-using Documenter: Utilities, Expanders
+using Documenter: Utilities, Expanders, Documents
 using Documenter.Utilities: Selectors
-using Documenter.Expanders: ExpanderPipeline, iscode, _any_color_fmt
+using Documenter.Expanders: ExpanderPipeline, iscode, _any_color_fmt, droplines, prepend_prompt, remove_sandbox_from_output
+
 
 abstract type GifBlocks <: ExpanderPipeline end
 
@@ -10,8 +13,8 @@ Selectors.order(::Type{GifBlocks})    = 12.0
 Selectors.matcher(::Type{GifBlocks},     node, page, doc) = iscode(node, "@gif")
 
 function Selectors.runner(::Type{GifBlocks}, x, page, doc)
-    matched = match(r"^@repl(?:\s+([^\s;]+))?\s*(;.*)?$", x.language)
-    matched === nothing && error("invalid '@repl' syntax: $(x.language)")
+    matched = match(r"^@gif(?:\s+([^\s;]+))?\s*(;.*)?$", x.language)
+    matched === nothing && error("invalid '@gif' syntax: $(x.language)")
     name, kwargs = matched.captures
     # The sandboxed module -- either a new one or a cached one from this page.
     mod = Utilities.get_sandbox_module!(page.globals.meta, "atexample", name)
@@ -27,7 +30,7 @@ function Selectors.runner(::Type{GifBlocks}, x, page, doc)
 
     multicodeblock = Markdown.Code[]
     linenumbernode = LineNumberNode(0, "REPL") # line unused, set to 0
-    @debug "Evaluating @repl block:\n$(x.code)"
+    @debug "Evaluating @gif block:\n$(x.code)"
     for (ex, str) in Utilities.parseblock(x.code, doc, page; keywords = false,
                                           linenumbernode = linenumbernode)
         buffer = IOBuffer()
