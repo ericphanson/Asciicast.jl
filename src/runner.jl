@@ -6,12 +6,13 @@ using Documenter: Utilities, Expanders, Documents
 using Documenter.Utilities: Selectors
 using Documenter.Expanders: ExpanderPipeline, iscode, _any_color_fmt, droplines, prepend_prompt, remove_sandbox_from_output
 
-
 abstract type GifBlocks <: ExpanderPipeline end
 
-Selectors.order(::Type{GifBlocks})    = 12.0
-Selectors.matcher(::Type{GifBlocks},     node, page, doc) = iscode(node, "@gif")
+Selectors.order(::Type{GifBlocks}) = 12.0
+Selectors.matcher(::Type{GifBlocks}, node, page, doc) = iscode(node, "@gif")
 
+# Slightly modified from:
+# https://github.com/JuliaDocs/Documenter.jl/blob/68dbd53d4ff6b339e795a4a3328955ad5c689e0e/src/Expanders.jl#L638-L696
 function Selectors.runner(::Type{GifBlocks}, x, page, doc)
     matched = match(r"^@gif(?:\s+([^\s;]+))?\s*(;.*)?$", x.language)
     matched === nothing && error("invalid '@gif' syntax: $(x.language)")
@@ -29,7 +30,7 @@ function Selectors.runner(::Type{GifBlocks}, x, page, doc)
     end
 
     name = "test.cast"
-    cast = Cast(joinpath(page.workdir, "assets", "casts", name))
+    cast = Cast(joinpath(page.workdir, "assets", "casts", name); delay=.5)
     @show cast.write_handle
     raw_html = Documents.RawHTML("""<asciinema-player src="./assets/casts/$(name)" idle-time-limit="1" autoplay="true" start-at="0.3"></asciinema-player >""")
     multicodeblock = Markdown.Code[]
@@ -60,6 +61,7 @@ function Selectors.runner(::Type{GifBlocks}, x, page, doc)
         if !isempty(input)
             push!(multicodeblock, Markdown.Code("julia-repl", prepend_prompt(input)))
             write_event!(cast, InputEvent, input)
+            write_event!(cast, OutputEvent, prepend_prompt(input) * "\n")
         end
         out = IOBuffer()
         print(out, c.output) # c.output is std(out|err)
@@ -72,10 +74,8 @@ function Selectors.runner(::Type{GifBlocks}, x, page, doc)
         outstr = String(take!(out))
         # Replace references to gensym'd module with Main
         outstr = remove_sandbox_from_output(outstr, mod)
-        # push!(multicodeblock, Markdown.Code("documenter-ansi", rstrip(outstr)))
 
         write_event!(cast, OutputEvent, outstr)
     end
-    # page.mapping[x] = Documents.MultiCodeBlock("julia-repl", multicodeblock)
     page.mapping[x] = Documents.MultiOutput([Documents.MultiCodeBlock("julia-repl", multicodeblock), raw_html])
 end

@@ -25,32 +25,42 @@ StructTypes.omitempties(::Type{Header}) = true
 
 @enum EventType OutputEvent InputEvent
 
+# Some methods inspired by ArgTools.jl to try to be
+# agnostic to IO handles or files.
+# We can't use ArgTools itself because we need to be
+# able to append.
 function write_append!(f, handle::AbstractString)
     open(handle; append=true) do io
         f(io)
     end
 end
-
-function write_append!(f, handle::IO)
-    f(handle)
-end
+write_append!(f, handle::IO) = f(handle)
 
 function write!(f, handle::AbstractString)
     open(handle; write=true) do io
         f(io)
     end
 end
+write!(f, handle::IO) = f(handle)
 
-function write!(f, handle::IO)
-    f(handle)
-end
+"""
+    Cast(file_or_io, header=Header(), start_time=time(); delay=0.0)
 
+Create a `Cast` object which represents an `asciicast` file
+(see https://github.com/asciinema/asciinema/blob/5816099c4bd3c151144414f5a245405b926d6c76/doc/asciicast-v2.md
+for the format).
 
+Set `delay` to enforce a constant delay between events.
+
+Use [`write_event!`](@ref) to write an event to the cast.
+"""
 struct Cast{T<:Union{IO, AbstractString}}
     write_handle::T
     header::Header
     start_time::Float64
-    function Cast(write_handle::Union{IO, AbstractString}, header::Header=Header(), start_time::Float64=time())
+    events_written::Base.RefValue{Int}
+    delay::Float64
+    function Cast(write_handle::Union{IO, AbstractString}, header::Header=Header(), start_time::Float64=time(); delay=0.0)
         if write_handle isa AbstractString
             mkpath(dirname(write_handle))
         end
@@ -58,16 +68,25 @@ struct Cast{T<:Union{IO, AbstractString}}
             JSON3.write(io, header)
             println(io)
         end
-        new{typeof(write_handle)}(write_handle, header, start_time)
+        new{typeof(write_handle)}(write_handle, header, start_time, Ref(0), delay)
     end
 end
 
+
+"""
+    write_event!(cast::Cast, event_type::EventType, event_data::AbstractString) -> time_since_start
+
+Write an event to `cast` of type `event_type` (either `OutputEvent` or `InputEvent`) with data given by `event_data`.
+"""
 function write_event!(cast::Cast, event_type::EventType, event_data::AbstractString)
     t = time() - cast.start_time
     write_append!(cast.write_handle) do io
-        JSON3.write(io, (t, event_type == OutputEvent ? "o" : "i", event_data))
-        println(io)
+        # asciinema's player seems to require `\r\n` instead of just `\n`
+        event_data = replace(event_data, "\n" => "\r\n")
+        JSON3.write(io, (t + cast.delay*cast.events_written[], event_type == OutputEvent ? "o" : "i", event_data))
+        write(io, "\r\n")
     end
+    cast.events_written[] += 1
     return t
 end
 
