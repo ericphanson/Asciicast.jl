@@ -28,6 +28,10 @@ function Selectors.runner(::Type{GifBlocks}, x, page, doc)
         end
     end
 
+    name = "test.cast"
+    cast = Cast(joinpath(page.workdir, "assets", "casts", name))
+    @show cast.write_handle
+    raw_html = Documents.RawHTML("""<asciinema-player src="./assets/casts/$(name)" idle-time-limit="1" autoplay="true" start-at="0.3"></asciinema-player >""")
     multicodeblock = Markdown.Code[]
     linenumbernode = LineNumberNode(0, "REPL") # line unused, set to 0
     @debug "Evaluating @gif block:\n$(x.code)"
@@ -55,6 +59,7 @@ function Selectors.runner(::Type{GifBlocks}, x, page, doc)
         end
         if !isempty(input)
             push!(multicodeblock, Markdown.Code("julia-repl", prepend_prompt(input)))
+            write_event!(cast, InputEvent, input)
         end
         out = IOBuffer()
         print(out, c.output) # c.output is std(out|err)
@@ -67,7 +72,10 @@ function Selectors.runner(::Type{GifBlocks}, x, page, doc)
         outstr = String(take!(out))
         # Replace references to gensym'd module with Main
         outstr = remove_sandbox_from_output(outstr, mod)
-        push!(multicodeblock, Markdown.Code("documenter-ansi", rstrip(outstr)))
+        # push!(multicodeblock, Markdown.Code("documenter-ansi", rstrip(outstr)))
+
+        write_event!(cast, OutputEvent, outstr)
     end
-    page.mapping[x] = Documents.MultiCodeBlock("julia-repl", multicodeblock)
+    # page.mapping[x] = Documents.MultiCodeBlock("julia-repl", multicodeblock)
+    page.mapping[x] = Documents.MultiOutput([Documents.MultiCodeBlock("julia-repl", multicodeblock), raw_html])
 end

@@ -2,7 +2,7 @@ module Asciicast
 
 using JSON3, Dates, StructTypes
 
-export Cast, output, input, write_event!
+export Cast, OutputEvent, InputEvent, write_event!
 
 const Object = Dict{String, String}
 
@@ -23,18 +23,7 @@ end
 StructTypes.StructType(::Type{Header}) = StructTypes.Struct()
 StructTypes.omitempties(::Type{Header}) = true
 
-@enum EventType output input
-
-struct Event
-    time::Float64
-    var"event-type"::String
-    var"event-data"::String
-    function Event(time::Float64, event_type::EventType, event_data::String)
-        new(time, event_type == output ? "o" : "i", event_data)
-    end
-end
-
-StructTypes.StructType(::Type{Event}) = StructTypes.Struct()
+@enum EventType OutputEvent InputEvent
 
 function write_append!(f, handle::AbstractString)
     open(handle; append=true) do io
@@ -62,6 +51,9 @@ struct Cast{T<:Union{IO, AbstractString}}
     header::Header
     start_time::Float64
     function Cast(write_handle::Union{IO, AbstractString}, header::Header=Header(), start_time::Float64=time())
+        if write_handle isa AbstractString
+            mkpath(dirname(write_handle))
+        end
         write!(write_handle) do io
             JSON3.write(io, header)
             println(io)
@@ -73,7 +65,7 @@ end
 function write_event!(cast::Cast, event_type::EventType, event_data::AbstractString)
     t = time() - cast.start_time
     write_append!(cast.write_handle) do io
-        JSON3.write(io, Event(t, event_type, event_data))
+        JSON3.write(io, (t, event_type == OutputEvent ? "o" : "i", event_data))
         println(io)
     end
     return t
