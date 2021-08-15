@@ -1,5 +1,7 @@
 # Asciicast
 
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://ericphanson.github.io/Asciicast.jl/dev)
+
 Asciicast.jl is a Julia package for recording Julia sessions into the `asciicast` v2 file format, <https://github.com/asciinema/asciinema/blob/asciicast-v2/doc/asciicast-v2.md>.
 
 Asciicast provides a type `Cast` which can be used for constructing asciicast v2 files, for example:

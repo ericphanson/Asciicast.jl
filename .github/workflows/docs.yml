@@ -17,6 +17,7 @@ on:
       - 'docs/**'
       - 'deps/**'
       - 'Project.toml'
+  workflow_dispatch:
 jobs:
   build:
     timeout-minutes: 30
