@@ -10,7 +10,7 @@ using UUIDs
 abstract type GifBlocks <: ExpanderPipeline end
 
 Selectors.order(::Type{GifBlocks}) = 12.0
-Selectors.matcher(::Type{GifBlocks}, node, page, doc) = iscode(node, "@gif")
+Selectors.matcher(::Type{GifBlocks}, node, page, doc) = iscode(node, r"^@gif")
 
 # Slightly modified from:
 # https://github.com/JuliaDocs/Documenter.jl/blob/68dbd53d4ff6b339e795a4a3328955ad5c689e0e/src/Expanders.jl#L638-L696
