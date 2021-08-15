@@ -3,6 +3,13 @@ uuid = "2600d445-abca-43b9-92aa-ce144ac0b05b"
 authors = ["Eric Hanson <5846501+ericphanson@users.noreply.github.com> and contributors"]
 version = "0.1.0"
 
+[deps]
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
+Markdown = "d6f4376e-aef5-505a-96c1-9c027394607a"
+StructTypes = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
+
 [compat]
 julia = "1"
 
