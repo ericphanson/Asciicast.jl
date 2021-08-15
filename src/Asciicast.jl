@@ -47,7 +47,7 @@ write!(f, handle::IO) = f(handle)
     Cast(file_or_io, header=Header(), start_time=time(); delay=0.0)
 
 Create a `Cast` object which represents an `asciicast` file
-(see https://github.com/asciinema/asciinema/blob/5816099c4bd3c151144414f5a245405b926d6c76/doc/asciicast-v2.md
+(see <https://github.com/asciinema/asciinema/blob/asciicast-v2/doc/asciicast-v2.md>
 for the format).
 
 Set `delay` to enforce a constant delay between events.
