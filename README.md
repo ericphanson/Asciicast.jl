@@ -21,13 +21,13 @@ this simple example becomes:
 
 ![](example.gif)
 
-This is useful for READMEs in GitHub since fancier web technologies like Javascript is not supported. In a richer environment, an
+This is useful for READMEs in GitHub since fancier web technologies like Javascript are not supported there. In a richer environment, an
 [asciinema-player](https://github.com/asciinema/asciinema-player) can be embedded to play the cast.
 
-Asciicast.jl also provides an `@gif` block for Documenter.jl, which can be used like
-an `@repl` block, except instead of printing the output after each line, it collects the output and generates
-an asciicast file. Then it produces an inline HTML player via
-asciinema-player.
+Speaking of a richer environment, Asciicast.jl also provides an `@gif` block for Documenter.jl. This can be used like
+an [`@repl` block](https://juliadocs.github.io/Documenter.jl/stable/man/syntax/#@repl-block), except instead of printing the output after each line, it collects the output and generates
+an asciicast file. Then it produces an inline
+asciinema-player to play the resulting cast.
 
 This feature requires the necessary JS and CSS files are added to `assets` in `makedocs`. See [docs/make.jl](docs/make.jl) for an example.
 
