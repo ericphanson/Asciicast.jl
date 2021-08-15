@@ -43,6 +43,15 @@ function write!(f, handle::AbstractString)
 end
 write!(f, handle::IO) = f(handle)
 
+
+struct Cast{T<:Union{IO, AbstractString}}
+    write_handle::T
+    header::Header
+    start_time::Float64
+    events_written::Base.RefValue{Int}
+    delay::Float64
+end
+
 """
     Cast(file_or_io, header=Header(), start_time=time(); delay=0.0)
 
@@ -54,22 +63,15 @@ Set `delay` to enforce a constant delay between events.
 
 Use [`write_event!`](@ref) to write an event to the cast.
 """
-struct Cast{T<:Union{IO, AbstractString}}
-    write_handle::T
-    header::Header
-    start_time::Float64
-    events_written::Base.RefValue{Int}
-    delay::Float64
-    function Cast(write_handle::Union{IO, AbstractString}, header::Header=Header(), start_time::Float64=time(); delay=0.0)
-        if write_handle isa AbstractString
-            mkpath(dirname(write_handle))
-        end
-        write!(write_handle) do io
-            JSON3.write(io, header)
-            println(io)
-        end
-        new{typeof(write_handle)}(write_handle, header, start_time, Ref(0), delay)
+function Cast(write_handle::Union{IO, AbstractString}, header::Header=Header(), start_time::Float64=time(); delay=0.0)
+    if write_handle isa AbstractString
+        mkpath(dirname(write_handle))
     end
+    write!(write_handle) do io
+        JSON3.write(io, header)
+        println(io)
+    end
+    return Cast{typeof(write_handle)}(write_handle, header, start_time, Ref(0), delay)
 end
 
 

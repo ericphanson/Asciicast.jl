@@ -5,6 +5,7 @@ using Documenter
 using Documenter: Utilities, Expanders, Documents
 using Documenter.Utilities: Selectors
 using Documenter.Expanders: ExpanderPipeline, iscode, _any_color_fmt, droplines, prepend_prompt, remove_sandbox_from_output
+using UUIDs
 
 abstract type GifBlocks <: ExpanderPipeline end
 
@@ -29,9 +30,8 @@ function Selectors.runner(::Type{GifBlocks}, x, page, doc)
         end
     end
 
-    name = "test.cast"
+    name = "$(uuid4()).cast"
     cast = Cast(joinpath(page.workdir, "assets", "casts", name); delay=.5)
-    @show cast.write_handle
     raw_html = Documents.RawHTML("""<asciinema-player src="./assets/casts/$(name)" idle-time-limit="1" autoplay="true" start-at="0.3"></asciinema-player >""")
     multicodeblock = Markdown.Code[]
     linenumbernode = LineNumberNode(0, "REPL") # line unused, set to 0
