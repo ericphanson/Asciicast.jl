@@ -92,6 +92,7 @@ function write_event!(cast::Cast, event_type::EventType, event_data::AbstractStr
     return t
 end
 
+include("capture.jl")
 include("runner.jl")
 
 end # module
