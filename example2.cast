@@ -1,0 +1,6 @@
+{"version":2,"width":80,"height":24,"timestamp":1629147724,"env":{"TERM":"xterm-256color","SHELL":"/bin/zsh"}}
+[0.1746211051940918,"o","\u001b[36m\u001b[1m[ \u001b[22m\u001b[39m\u001b[36m\u001b[1mInfo: \u001b[22m\u001b[39mHello!\r\nThat was a logging statement, but this is printing."]
+[0.17470002174377441,"o","\r\n\u001b[36m\u001b[1m┌ \u001b[22m\u001b[39m\u001b[36m\u001b[1mInfo: \u001b[22m\u001b[39mhere's `x`\r\n\u001b[36m\u001b[1m└ \u001b[22m\u001b[39m  x = 1\r\n"]
+[0.17474007606506348,"o","Now I'll wait a second\r\n"]
+[1.1809089183807373,"o","ok, done!\r\n"]
+[1.181023120880127,"o",""]
