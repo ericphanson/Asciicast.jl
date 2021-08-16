@@ -1,8 +1,9 @@
 module Asciicast
 
-using JSON3, Dates, StructTypes
+using JSON3, Dates, StructTypes, Base64
 
 export Cast, OutputEvent, InputEvent, write_event!, record_output
+export @cast_str
 
 const Object = Dict{String, String}
 
@@ -43,6 +44,11 @@ function write!(f, handle::AbstractString)
 end
 write!(f, handle::IO) = f(handle)
 
+function collect_bytes(io::IO)
+    seekstart(io)
+    return read(io)
+end
+collect_bytes(filename) = read(filename)
 
 struct Cast{T<:Union{IO, AbstractString}}
     write_handle::T
@@ -53,7 +59,7 @@ struct Cast{T<:Union{IO, AbstractString}}
 end
 
 """
-    Cast(file_or_io, header=Header(), start_time=time(); delay=0.0)
+    Cast(file_or_io=IOBuffer(), header=Header(), start_time=time(); delay=0.0)
 
 Create a `Cast` object which represents an `asciicast` file
 (see <https://github.com/asciinema/asciinema/blob/asciicast-v2/doc/asciicast-v2.md>
@@ -63,7 +69,7 @@ Set `delay` to enforce a constant delay between events.
 
 Use [`write_event!`](@ref) to write an event to the cast.
 """
-function Cast(write_handle::Union{IO, AbstractString}, header::Header=Header(), start_time::Float64=time(); delay=0.0)
+function Cast(write_handle::Union{IO, AbstractString}=IOBuffer(), header::Header=Header(), start_time::Float64=time(); delay=0.0)
     if write_handle isa AbstractString
         mkpath(dirname(write_handle))
     end
@@ -74,6 +80,19 @@ function Cast(write_handle::Union{IO, AbstractString}, header::Header=Header(), 
     return Cast{typeof(write_handle)}(write_handle, header, start_time, Ref(0), delay)
 end
 
+collect_bytes(cast::Cast) = collect_bytes(cast.write_handle)
+
+function Base.show(io::IO, mime::MIME"text/html", cast::Cast)
+    base64_str = base64encode(collect_bytes(cast))
+    return show(io, mime, HTML("""<asciinema-player src="data:text/plain;base64, $(base64_str)" idle-time-limit="1" autoplay="true" start-at="0.3"></asciinema-player >"""))
+end
+
+"""
+    save(output, cast::Cast)
+
+Writes the contents of a [`Cast`](@ref) `cast` to `output`.
+"""
+save(output, cast::Cast) = write(output, collect_bytes(cast))
 
 """
     write_event!(cast::Cast, event_type::EventType, event_data::AbstractString) -> time_since_start
@@ -104,6 +123,9 @@ be of any type but must support `open`.
 The parameters of the cast may be passed here; see [`Cast`](@ref) for more details.
 """
 function record_output(f, filepath, h::Header=Header(), start_time::Float64=time(); delay=0)
+    # I'd like to return the `cast` here, but I also want it to write directly to a file handle to disk
+    # to support very long casts that might not fit into memory. And I don't want to return a reference
+    # to the file handle inside the cast object. Not sure what to do.
     open(filepath; write=true) do io
         cast = Cast(io, h, start_time; delay=delay)
         capture(f, cast; color = true)

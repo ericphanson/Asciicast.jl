@@ -5,23 +5,34 @@
 
 ## Simple example
 
-```@gif
+```@cast
 using Pkg
 Pkg.status()
 1 + 1
+```
+
+## Macro example
+
+```@example
+using Asciicast
+cast"""
+x = 1
+x+1
+y = x-1
+"""
 ```
 
 ## Example with a named block
 
 First block:
 
-```@gif 1
+```@cast 1
 x = -1
 x*x
 ```
 
 The next block continues:
-```@gif 1
+```@cast 1
 y = x+1
 sqrt(x)
 ```
@@ -35,14 +46,14 @@ z = y^2
 
 ## Modifying the delay
 Delay of 0:
-```@gif; delay=0
+```@cast; delay=0
 1
 2
 3
 ```
 
 Delay of 1:
-```@gif; delay=1
+```@cast; delay=1
 1
 2
 3
