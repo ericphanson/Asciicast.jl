@@ -5,7 +5,7 @@ import Random
 
 # pass a `cast` to write events to it "as they happen".
 # pass a `process` function to modify the event data before writing it.
-function capture(f, cast; rethrow::Type=Any, color::Bool=false, process=identity)
+function capture(f, cast::Cast; rethrow::Type=Any, color::Bool=false, process=identity)
     # Original implementation from Documenter.jl (MIT license)
     # Save the default output streams.
     default_stdout = stdout

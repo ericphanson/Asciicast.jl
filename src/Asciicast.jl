@@ -2,7 +2,7 @@ module Asciicast
 
 using JSON3, Dates, StructTypes
 
-export Cast, OutputEvent, InputEvent, write_event!
+export Cast, OutputEvent, InputEvent, write_event!, record_output
 
 const Object = Dict{String, String}
 
@@ -94,5 +94,21 @@ end
 
 include("capture.jl")
 include("runner.jl")
+
+"""
+    record_output(f, filepath, h::Header=Header(), start_time::Float64=time(); delay=0) -> filepath
+
+Executes `f()` while saving all output to a cast that's located at `filepath`. `filepath` may
+be of any type but must support `open`.
+
+The parameters of the cast may be passed here; see [`Cast`](@ref) for more details.
+"""
+function record_output(f, filepath, h::Header=Header(), start_time::Float64=time(); delay=0)
+    open(filepath; write=true) do io
+        cast = Cast(io, h, start_time; delay=delay)
+        capture(f, cast; color = true)
+    end
+    return filepath
+end
 
 end # module
