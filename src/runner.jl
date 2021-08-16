@@ -1,6 +1,5 @@
 using Markdown
 using REPL
-using IOCapture
 using Documenter
 using Documenter: Utilities, Expanders, Documents
 using Documenter.Utilities: Selectors
@@ -30,8 +29,8 @@ function Selectors.runner(::Type{GifBlocks}, x, page, doc)
         end
     end
 
-    name = "$(uuid4()).cast"
-    cast = Cast(joinpath(page.workdir, "assets", "casts", name); delay=.5)
+    name = "$(uuid4()).cast"    
+    cast = Cast(IOBuffer(); delay=.5)
     raw_html = Documents.RawHTML("""<asciinema-player src="./assets/casts/$(name)" idle-time-limit="1" autoplay="true" start-at="0.3"></asciinema-player >""")
     multicodeblock = Markdown.Code[]
     linenumbernode = LineNumberNode(0, "REPL") # line unused, set to 0
@@ -40,12 +39,19 @@ function Selectors.runner(::Type{GifBlocks}, x, page, doc)
                                           linenumbernode = linenumbernode)
         buffer = IOBuffer()
         input  = droplines(str)
+        if !isempty(input)
+            push!(multicodeblock, Markdown.Code("julia-repl", prepend_prompt(input)))
+            write_event!(cast, InputEvent, input)
+            write_event!(cast, OutputEvent, prepend_prompt(input) * "\n")
+        end
+        
         if VERSION >= v"1.5.0-DEV.178"
             # Use the REPL softscope for REPLBlocks,
             # see https://github.com/JuliaLang/julia/pull/33864
             ex = REPL.softscope!(ex)
         end
-        c = IOCapture.capture(rethrow = InterruptException, color = ansicolor) do
+        c = capture(cast; rethrow = InterruptException, color = ansicolor,
+        process = str -> remove_sandbox_from_output(str, mod)) do
             cd(page.workdir) do
                 Core.eval(mod, ex)
             end
@@ -58,24 +64,23 @@ function Selectors.runner(::Type{GifBlocks}, x, page, doc)
         else
             Documenter.DocTests.error_to_string(buffer, c.value, [])
         end
-        if !isempty(input)
-            push!(multicodeblock, Markdown.Code("julia-repl", prepend_prompt(input)))
-            write_event!(cast, InputEvent, input)
-            write_event!(cast, OutputEvent, prepend_prompt(input) * "\n")
-        end
+
         out = IOBuffer()
-        print(out, c.output) # c.output is std(out|err)
         if isempty(input) || isempty(output)
             println(out)
         else
             println(out, output, "\n")
         end
-
         outstr = String(take!(out))
         # Replace references to gensym'd module with Main
         outstr = remove_sandbox_from_output(outstr, mod)
-
         write_event!(cast, OutputEvent, outstr)
     end
+
+
+    path = joinpath(page.workdir, "assets", "casts", name)
+    mkpath(dirname(path))
+    write(path, take!(cast.write_handle))
+
     page.mapping[x] = Documents.MultiOutput([Documents.MultiCodeBlock("julia-repl", multicodeblock), raw_html])
 end
