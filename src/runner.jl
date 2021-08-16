@@ -22,15 +22,27 @@ function Selectors.runner(::Type{GifBlocks}, x, page, doc)
 
     # "parse" keyword arguments to repl
     ansicolor = _any_color_fmt(doc)
+    delay = 0.5
     if kwargs !== nothing
         matched = match(r"\bansicolor\s*=\s*(true|false)\b", kwargs)
         if matched !== nothing
             ansicolor = matched[1] == "true"
         end
-    end
 
+        # match integer delay
+        matched = match(r"\bdelay\s*=\s*([0-9]+)", kwargs)
+        if matched !== nothing
+            delay = convert(Float64, parse(Int, matched[1]))
+        else
+            # match float delay
+            matched = match(r"\bdelay\s*=\s*((?:[0-9]*[.])?[0-9]+)", kwargs)
+            if matched !== nothing
+                delay = parse(Float64, matched[1])
+            end
+        end
+    end
     name = "$(uuid4()).cast"    
-    cast = Cast(IOBuffer(); delay=.5)
+    cast = Cast(IOBuffer(); delay=delay)
     raw_html = Documents.RawHTML("""<asciinema-player src="./assets/casts/$(name)" idle-time-limit="1" autoplay="true" start-at="0.3"></asciinema-player >""")
     multicodeblock = Markdown.Code[]
     linenumbernode = LineNumberNode(0, "REPL") # line unused, set to 0

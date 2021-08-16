@@ -33,6 +33,21 @@ Then we move to a REPL block:
 z = y^2
 ```
 
+## Modifying the delay
+Delay of 0:
+```@gif; delay=0
+1
+2
+3
+```
+
+Delay of 1:
+```@gif; delay=1
+1
+2
+3
+```
+
 ## API Reference
 
 ```@autodocs
