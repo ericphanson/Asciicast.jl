@@ -6,16 +6,16 @@ using Documenter.Utilities: Selectors
 using Documenter.Expanders: ExpanderPipeline, iscode, _any_color_fmt, droplines, prepend_prompt, remove_sandbox_from_output
 using UUIDs
 
-abstract type GifBlocks <: ExpanderPipeline end
+abstract type CastBlocks <: ExpanderPipeline end
 
-Selectors.order(::Type{GifBlocks}) = 12.0
-Selectors.matcher(::Type{GifBlocks}, node, page, doc) = iscode(node, r"^@gif")
+Selectors.order(::Type{CastBlocks}) = 12.0
+Selectors.matcher(::Type{CastBlocks}, node, page, doc) = iscode(node, r"^@cast")
 
 # Slightly modified from:
 # https://github.com/JuliaDocs/Documenter.jl/blob/68dbd53d4ff6b339e795a4a3328955ad5c689e0e/src/Expanders.jl#L638-L696
-function Selectors.runner(::Type{GifBlocks}, x, page, doc)
-    matched = match(r"^@gif(?:\s+([^\s;]+))?\s*(;.*)?$", x.language)
-    matched === nothing && error("invalid '@gif' syntax: $(x.language)")
+function Selectors.runner(::Type{CastBlocks}, x, page, doc)
+    matched = match(r"^@cast(?:\s+([^\s;]+))?\s*(;.*)?$", x.language)
+    matched === nothing && error("invalid '@cast' syntax: $(x.language)")
     name, kwargs = matched.captures
     # The sandboxed module -- either a new one or a cached one from this page.
     mod = Utilities.get_sandbox_module!(page.globals.meta, "atexample", name)
@@ -41,13 +41,37 @@ function Selectors.runner(::Type{GifBlocks}, x, page, doc)
             end
         end
     end
-    name = "$(uuid4()).cast"    
-    cast = Cast(IOBuffer(); delay=delay)
-    raw_html = Documents.RawHTML("""<asciinema-player src="./assets/casts/$(name)" idle-time-limit="1" autoplay="true" start-at="0.3"></asciinema-player >""")
+
     multicodeblock = Markdown.Code[]
+    cast = Cast(IOBuffer(); delay=delay)
+    cast_from_string!(x.code, cast; doc=doc, page=page, ansicolor=ansicolor, mod=mod, multicodeblock=multicodeblock)
+    
+    name = "$(uuid4()).cast"
+    raw_html = Documents.RawHTML("""<asciinema-player src="./assets/casts/$(name)" idle-time-limit="1" autoplay="true" start-at="0.3"></asciinema-player >""")
+
+    path = joinpath(page.workdir, "assets", "casts", name)
+    mkpath(dirname(path))
+    write(path, take!(cast.write_handle))
+
+    page.mapping[x] = Documents.MultiOutput([Documents.MultiCodeBlock("julia-repl", multicodeblock), raw_html])
+end
+
+
+Base.@kwdef struct FakeDoc
+    internal = (; errors = [])
+end
+
+Base.@kwdef struct FakePage
+    workdir = pwd()
+end
+Utilities.locrepr(::FakePage) = nothing
+
+
+
+function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(), page=FakePage(), ansicolor=true, mod = Module(), multicodeblock = Markdown.Code[])
     linenumbernode = LineNumberNode(0, "REPL") # line unused, set to 0
-    @debug "Evaluating @gif block:\n$(x.code)"
-    for (ex, str) in Utilities.parseblock(x.code, doc, page; keywords = false,
+    @debug "Evaluating @cast:\n$(x.code)"
+    for (ex, str) in Utilities.parseblock(code_string, doc, page; keywords = false,
                                           linenumbernode = linenumbernode)
         buffer = IOBuffer()
         input  = droplines(str)
@@ -69,7 +93,6 @@ function Selectors.runner(::Type{GifBlocks}, x, page, doc)
             end
         end
         Core.eval(mod, Expr(:global, Expr(:(=), :ans, QuoteNode(c.value))))
-        result = c.value
         output = if !c.error
             hide = REPL.ends_with_semicolon(input)
             Documenter.DocTests.result_to_string(buffer, hide ? nothing : c.value)
@@ -88,11 +111,27 @@ function Selectors.runner(::Type{GifBlocks}, x, page, doc)
         outstr = remove_sandbox_from_output(outstr, mod)
         write_event!(cast, OutputEvent, outstr)
     end
+end
 
 
-    path = joinpath(page.workdir, "assets", "casts", name)
-    mkpath(dirname(path))
-    write(path, take!(cast.write_handle))
+"""
+    @cast_str(code_string, delay=0) -> Cast
 
-    page.mapping[x] = Documents.MultiOutput([Documents.MultiCodeBlock("julia-repl", multicodeblock), raw_html])
+Creates a [`Cast`](@ref) object by executing the code in `code_string` in a REPL-like environment.
+
+## Example
+
+```julia
+using Asciicast
+
+c = cast"x=1"0.5 # note we set a delay of 0.5 here
+
+Asciicast.save("test.cast", c)
+```
+
+"""
+macro cast_str(code_string, delay=0)
+    cast = Cast(IOBuffer(); delay=delay)
+    cast_from_string!(code_string, cast)
+    return cast
 end
