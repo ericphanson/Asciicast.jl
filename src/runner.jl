@@ -4,9 +4,8 @@ abstract type CastBlocks <: ExpanderPipeline end
 Selectors.order(::Type{CastBlocks}) = 12.0
 Selectors.matcher(::Type{CastBlocks}, node, page, doc) = iscode(node, r"^@cast")
 
-
-
-using MarkdownAST
+# We can't just run the actual REPLBlocks, because then we have no timing information.
+# Thus, we need to basically reproduce their implementation, while saving timing info.
 
 # Slightly modified from:
 # https://github.com/JuliaDocs/Documenter.jl/blob/c5a89ab8a56c9e9c77497070a57362659aadd131/src/expander_pipeline.jl#L810C1-L881C1
@@ -30,11 +29,23 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
 
     # "parse" keyword arguments to repl
     ansicolor = _any_color_fmt(doc)
+    hide_inputs = false
+    allow_errors = true
     delay = 0.5
     if kwargs !== nothing
         matched = match(r"\bansicolor\s*=\s*(true|false)\b", kwargs)
         if matched !== nothing
             ansicolor = matched[1] == "true"
+        end
+
+        matched = match(r"\bhide_inputs\s*=\s*(true|false)\b", kwargs)
+        if matched !== nothing
+            hide_inputs = matched[1] == "true"
+        end
+
+        matched = match(r"\ballow_errors\s*=\s*(true|false)\b", kwargs)
+        if matched !== nothing
+            allow_errors = matched[1] == "true"
         end
 
         # match integer delay
@@ -53,10 +64,10 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
     multicodeblock = MarkdownAST.CodeBlock[]
 
     n_lines = length(split(x.code))
-    height = min(n_lines*2, 24) # try to choose the number of lines more appropriately
+    height = min(n_lines * 2, 24) # try to choose the number of lines more appropriately
     cast = Cast(IOBuffer(), Header(; height, idle_time_limit=1); delay=delay)
 
-    cast_from_string!(x.code, cast; doc=doc, page=page, ansicolor=ansicolor, mod=mod, multicodeblock=multicodeblock)
+    cast_from_string!(x.code, cast; doc=doc, page=page, ansicolor=ansicolor, mod=mod, multicodeblock=multicodeblock, allow_errors, x)
 
     name = "$(uuid4()).cast"
     raw_html = """
@@ -73,12 +84,13 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
     # https://github.com/JuliaDocs/Documenter.jl/blob/c5a89ab8a56c9e9c77497070a57362659aadd131/src/expander_pipeline.jl#L58C4-L64C8
     node.element = Documenter.MultiOutput(MarkdownAST.CodeBlock("julia-repl", ""))
 
-    mcb = Documenter.Node(Documenter.MultiCodeBlock(x, "julia-repl", []))
-
-    for element in multicodeblock
-        push!(mcb.children, Documenter.Node(element))
+    if !hide_inputs
+        mcb = Documenter.Node(Documenter.MultiCodeBlock(x, "julia-repl", []))
+        for element in multicodeblock
+            push!(mcb.children, Documenter.Node(element))
+        end
+        push!(node.children, mcb)
     end
-    push!(node.children, mcb)
     push!(node.children, Documenter.Node(Documenter.MultiOutputElement(
         Dict{MIME,Any}(MIME"text/html"() => raw_html)
     )))
@@ -95,14 +107,12 @@ Base.@kwdef struct FakePage
 end
 Documenter.locrepr(::FakePage) = nothing
 
-
-
-function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(), page=FakePage(), ansicolor=true, mod=Module(), multicodeblock=MarkdownAST.CodeBlock[])
+function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(), page=FakePage(), ansicolor=true, mod=Module(), multicodeblock=MarkdownAST.CodeBlock[], allow_errors=true, x=nothing)
     linenumbernode = LineNumberNode(0, "REPL") # line unused, set to 0
     @debug "Evaluating @cast:\n$(x.code)"
 
     pb = Documenter.parseblock(code_string, doc, page; keywords=false,
-    linenumbernode=linenumbernode)
+        linenumbernode=linenumbernode)
     n = length(pb)
     for (i, (ex, str)) in enumerate(pb)
         buffer = IOBuffer()
@@ -128,8 +138,21 @@ function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(
         output = if !c.error
             hide = REPL.ends_with_semicolon(input)
             Documenter.result_to_string(buffer, hide ? nothing : c.value)
-        else
+        elseif allow_errors
             Documenter.error_to_string(buffer, c.value, [])
+        else
+            lines = Documenter.find_block_in_file(x.code, page.source)
+            bt = Documenter.remove_common_backtrace(c.backtrace)
+            # we pretend to be an `example_block`, since it doesn't seem great
+            # to mutate Documenter's global list of error types before parse time
+            Documenter.@docerror(doc, :example_block,
+            """
+            failed to run `@cast` block in $(Documenter.locrepr(page.source, lines))
+            ```$(x.info)
+            $(x.code)
+            ```
+            """, exception = (c.value, bt))
+            return
         end
 
         out = IOBuffer()
@@ -172,7 +195,9 @@ Asciicast.save("test.cast", c)
 
 """
 macro cast_str(code_string, delay=0)
-    cast = Cast(IOBuffer(); delay=delay)
+    n_lines = length(split(code_string))
+    height = min(n_lines * 2, 24) # try to choose the number of lines more appropriately
+    cast = Cast(IOBuffer(), Header(; height); delay=delay)
     cast_from_string!(code_string, cast)
     return cast
 end

@@ -5,58 +5,42 @@
 
 ## Simple example
 
-```@cast
-using Pkg
-Pkg.status()
-1 + 1
-```
-
-## Macro example
-
 ```@example
 using Asciicast
 cast"""
-x = 1
-x+1
-y = x-1
-"""0.5
+    using Pkg
+    Pkg.status()
+    1 + 1
+    """0.5
 ```
 
-## Example with a named block
+## `record_output` example
 
-First block:
-
-```@cast 1
-x = -1
-x*x
+```@example
+using Asciicast
+record_output() do
+    @info "Hello!"
+    println("That was a logging statement, but this is printing.")
+    x = 1
+    x + 1 # does not print anything-- no output!
+    @info "here's `x`" x
+    println("Now I'll wait a second")
+    sleep(1)
+    println("ok, done!")
+end
 ```
 
-The next block continues:
-```@cast 1
-y = x+1
-sqrt(x)
-```
+## Manual example
 
-Then we move to a REPL block:
-
-```@repl 1
-@show y
-z = y^2
-```
-
-## Modifying the delay
-Delay of 0:
-```@cast; delay=0
-1
-2
-3
-```
-
-Delay of 1:
-```@cast; delay=1
-1
-2
-3
+```@example
+using Asciicast
+using Asciicast: Header
+cast = Cast(IOBuffer(), Header(; height=5))
+write_event!(cast, OutputEvent, "hello\n")
+write_event!(cast, OutputEvent, "Let us wait...")
+sleep(.5)
+write_event!(cast, OutputEvent, "\nDone!")
+cast
 ```
 
 ## API Reference

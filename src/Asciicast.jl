@@ -9,6 +9,7 @@ using Documenter
 using Documenter: Expanders, Selectors, iscode, _any_color_fmt, droplines, prepend_prompt, remove_sandbox_from_output
 using Documenter.Expanders: ExpanderPipeline
 using UUIDs
+using MarkdownAST
 
 export Cast, OutputEvent, InputEvent, write_event!, record_output
 export @cast_str
@@ -135,7 +136,7 @@ include("runner.jl")
 
 """
     record_output(f, filepath::AbstractString, h::Header=Header(), start_time::Float64=time(); delay=0) -> filepath
-    record_output(f, io::IO,  h::Header=Header(), start_time::Float64=time(); delay=0)
+    record_output(f, io::IO=IOBuffer(), h::Header=Header(), start_time::Float64=time(); delay=0)
 
 Executes `f()` while saving all output to a cast whose data is saved to `io`, or to a file at `filepath`.
 
@@ -149,7 +150,7 @@ function record_output(f, filepath::AbstractString, args...; kw...)
     end
 end
 
-function record_output(f, io::IO,  h::Header=Header(), start_time::Float64=time(); delay=0)
+function record_output(f, io::IO=IOBuffer(),  h::Header=Header(), start_time::Float64=time(); delay=0)
     cast = Cast(io, h, start_time; delay=delay)
     capture(f, cast; color = true)
     return cast
