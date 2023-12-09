@@ -21,5 +21,6 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
+        "Documenter usage" => "documenter_usage.md",
     ],
 )
