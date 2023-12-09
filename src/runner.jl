@@ -51,12 +51,20 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
     end
 
     multicodeblock = MarkdownAST.CodeBlock[]
-    cast = Cast(IOBuffer(); delay=delay)
+
+    n_lines = length(split(x.code))
+    height = min(n_lines*2, 24) # try to choose the number of lines more appropriately
+    cast = Cast(IOBuffer(), Header(; height, idle_time_limit=1), 0.8*delay; delay=delay)
 
     cast_from_string!(x.code, cast; doc=doc, page=page, ansicolor=ansicolor, mod=mod, multicodeblock=multicodeblock)
 
     name = "$(uuid4()).cast"
-    raw_html = """<asciinema-player src="./assets/casts/$(name)" idle-time-limit="1" autoplay="true" start-at="0.3"></asciinema-player >"""
+    raw_html = """
+    <div id="$(name)"></div>
+    <script>
+    AsciinemaPlayer.create('./assets/casts/$(name)', document.getElementById('$(name)'), { autoPlay: true, fit: false});
+    </script>
+    """
 
     path = joinpath(page.workdir, "assets", "casts", name)
     mkpath(dirname(path))
@@ -93,9 +101,10 @@ function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(
     linenumbernode = LineNumberNode(0, "REPL") # line unused, set to 0
     @debug "Evaluating @cast:\n$(x.code)"
 
-
-    for (ex, str) in Documenter.parseblock(code_string, doc, page; keywords=false,
-        linenumbernode=linenumbernode)
+    pb = Documenter.parseblock(code_string, doc, page; keywords=false,
+    linenumbernode=linenumbernode)
+    n = length(pb)
+    for (i, (ex, str)) in enumerate(pb)
         buffer = IOBuffer()
         input = droplines(str)
         if !isempty(input)
@@ -132,14 +141,22 @@ function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(
         outstr = String(take!(out))
         # Replace references to gensym'd module with Main
         outstr = remove_sandbox_from_output(outstr, mod)
-        write_event!(cast, OutputEvent, outstr)
+        if i == n
+            trimmed = chomp(outstr)
+            if !isempty(trimmed)
+                write_event!(cast, OutputEvent, trimmed)
+            end
+
+        else
+            write_event!(cast, OutputEvent, outstr)
+        end
         push!(multicodeblock, MarkdownAST.CodeBlock("documenter-ansi", rstrip(outstr)))
     end
 end
 
 
 """
-    @cast_str(code_string, delay=0) -> Cast
+    @cast_str(code_string, delay=0.5) -> Cast
 
 Creates a [`Cast`](@ref) object by executing the code in `code_string` in a REPL-like environment.
 
@@ -148,13 +165,13 @@ Creates a [`Cast`](@ref) object by executing the code in `code_string` in a REPL
 ```julia
 using Asciicast
 
-c = cast"x=1"0.5 # note we set a delay of 0.5 here
+c = cast"x=1"0.25 # note we set a delay of 0.25 here
 
 Asciicast.save("test.cast", c)
 ```
 
 """
-macro cast_str(code_string, delay=0)
+macro cast_str(code_string, delay=0.5)
     cast = Cast(IOBuffer(); delay=delay)
     cast_from_string!(code_string, cast)
     return cast

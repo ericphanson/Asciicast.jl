@@ -93,7 +93,17 @@ collect_bytes(cast::Cast) = collect_bytes(cast.write_handle)
 
 function Base.show(io::IO, mime::MIME"text/html", cast::Cast)
     base64_str = base64encode(collect_bytes(cast))
-    return show(io, mime, HTML("""<asciinema-player src="data:text/plain;base64, $(base64_str)" idle-time-limit="1" autoplay="true" start-at="0.3"></asciinema-player >"""))
+    name = uuid4()
+    html = HTML("""
+    <div id="$(name)"></div>
+    <script>
+    AsciinemaPlayer.create(
+    'data:text/plain;base64,$(base64_str)',
+    document.getElementById('$(name)'), { autoPlay: true, fit: false}
+    );
+    </script>
+    """)
+    return show(io, mime, html)
 end
 
 """
