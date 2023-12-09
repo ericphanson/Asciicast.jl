@@ -1,0 +1,5 @@
+{"version":2,"width":80,"height":8,"timestamp":1702153649,"idle_time_limit":1.0,"env":{"TERM":"xterm-256color","SHELL":"/bin/bash"}}
+[0.0001819133758544922,"i","error(\"This is an exception!\")"]
+[0.5001850128173828,"o","julia> error(\"This is an exception!\")\r\n"]
+[1.0004808902740479,"o",""]
+[2.0544798374176025,"o","ERROR: This is an exception!\r\n"]
