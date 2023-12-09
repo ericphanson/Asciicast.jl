@@ -65,7 +65,7 @@ Asciicast.save("example3.cast", cast)
 
 These `.cast` files can be used a couple different ways.
 
-They can rendered into ".gif"s via [asciicast2gif](https://github.com/asciinema/asciicast2gif), which is what is used in the previous section to show the output.
+They can rendered into ".gif"s via [agg](https://github.com/asciinema/agg), which is what is used in the previous section to show the output. Here, I've used [larger font size to reduce blurriness](https://github.com/asciinema/agg/issues/60#issuecomment-1807910643), e.g. `agg --font-size 28 example3.cast example3.gif` for the third example.
 
 This is useful for READMEs in GitHub since fancier web technologies like Javascript are not supported there. In a richer environment, an
 [asciinema-player](https://github.com/asciinema/asciinema-player) can be embedded to play the cast. `Cast` objects support a `MIME"text/html"` `show` method, which means in environments that support HTML, they automatically create such a player. However, they still need the JS and CSS assets to be loaded.
@@ -76,4 +76,3 @@ an asciicast file. Then it produces an inline
 asciinema-player to play the resulting cast.
 
 This feature requires the necessary JS and CSS files are added to `assets` in `makedocs`. See [docs/make.jl](docs/make.jl) for an example.
-

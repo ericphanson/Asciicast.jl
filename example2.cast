@@ -1,6 +1,6 @@
-{"version":2,"width":80,"height":24,"timestamp":1629155007,"env":{"TERM":"xterm-256color","SHELL":"/bin/zsh"}}
-[0.08511996269226074,"o","\u001b[36m\u001b[1m[ \u001b[22m\u001b[39m\u001b[36m\u001b[1mInfo: \u001b[22m\u001b[39mHello!\r\nThat was a logging statement, but this is printing."]
-[0.08520388603210449,"o","\r\n\u001b[36m\u001b[1m┌ \u001b[22m\u001b[39m\u001b[36m\u001b[1mInfo: \u001b[22m\u001b[39mhere's `x`\r\n\u001b[36m\u001b[1m└ \u001b[22m\u001b[39m  x = 1\r\n"]
-[0.08524584770202637,"o","Now I'll wait a second\r\n"]
-[1.0873098373413086,"o","ok, done!\r\n"]
-[1.0875840187072754,"o",""]
+{"version":2,"width":80,"height":24,"timestamp":1702154777,"env":{"TERM":"xterm-256color","SHELL":"/bin/zsh"}}
+[0.025410890579223633,"o","\u001b[36m\u001b[1m[ \u001b[22m\u001b[39m\u001b[36m\u001b[1mInfo: \u001b[22m\u001b[39mHello!\r\nThat was a logging statement, but this is printing."]
+[0.03143501281738281,"o","\r\n\u001b[36m\u001b[1m┌ \u001b[22m\u001b[39m\u001b[36m\u001b[1mInfo: \u001b[22m\u001b[39mhere's `x`\r\n\u001b[36m\u001b[1m└ \u001b[22m\u001b[39m  x = 1\r\n"]
+[0.03147101402282715,"o","Now I'll wait a second\r\n"]
+[1.0335948467254639,"o","ok, done!\r\n"]
+[1.0336568355560303,"o",""]

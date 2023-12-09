@@ -9,6 +9,7 @@ using Documenter
 using Documenter: Expanders, Selectors, iscode, _any_color_fmt, droplines, prepend_prompt, remove_sandbox_from_output
 using Documenter.Expanders: ExpanderPipeline
 using UUIDs
+using MarkdownAST
 
 export Cast, OutputEvent, InputEvent, write_event!, record_output
 export @cast_str
@@ -16,6 +17,23 @@ export @cast_str
 const Object = Dict{String, String}
 
 # https://github.com/asciinema/asciinema/blob/2c8af028dec448bb51ec0a1848e96a08121827b0/doc/asciicast-v2.md
+"""
+    Base.@kwdef struct Header
+        version::Int=2
+        width::Int=80
+        height::Int=24
+        timestamp::Union{Int, Nothing}=floor(Int, datetime2unix(now()))
+        duration::Union{Float64, Nothing}=nothing
+        idle_time_limit::Union{Float64, Nothing}=nothing
+        command::Union{String, Nothing}=nothing
+        title::Union{String, Nothing}=nothing
+        env::Union{Object,Nothing}=Object("SHELL" => get(ENV, "SHELL", "/bin/bash"),
+                                                "TERM" => get(ENV, "TERM", "xterm-256color"))
+        theme::Union{Object,Nothing}=nothing
+    end
+
+The header of an asciicast file. Documented at <https://github.com/asciinema/asciinema/blob/v2.4.0/doc/asciicast-v2.md#header>.
+"""
 Base.@kwdef struct Header
     version::Int=2
     width::Int=80
@@ -33,6 +51,11 @@ end
 StructTypes.StructType(::Type{Header}) = StructTypes.Struct()
 StructTypes.omitempties(::Type{Header}) = true
 
+"""
+    Asciicast.EventType
+
+An enum consisting of `Asciicast.OutputEvent` and `Asciicast.InputEvent`.
+"""
 @enum EventType OutputEvent InputEvent
 
 # Some methods inspired by ArgTools.jl to try to be
@@ -134,10 +157,10 @@ include("capture.jl")
 include("runner.jl")
 
 """
-    record_output(f, filepath::AbstractString, h::Header=Header(), start_time::Float64=time(); delay=0) -> filepath
-    record_output(f, io::IO,  h::Header=Header(), start_time::Float64=time(); delay=0)
+    record_output(f, filepath::AbstractString, start_time::Float64=time(); delay=0, kw...) -> filepath
+    record_output(f, io::IO=IOBuffer(), start_time::Float64=time(); delay=0, kw...)
 
-Executes `f()` while saving all output to a cast whose data is saved to `io`, or to a file at `filepath`.
+Executes `f()` while saving all output to a cast whose data is saved to `io`, or to a file at `filepath`. The arguments `kw...` may be any keyword arguments accepted by [`Header`](@ref).
 
 The parameters of the cast may be passed here; see [`Cast`](@ref) for more details.
 
@@ -149,17 +172,27 @@ function record_output(f, filepath::AbstractString, args...; kw...)
     end
 end
 
-function record_output(f, io::IO,  h::Header=Header(), start_time::Float64=time(); delay=0)
-    cast = Cast(io, h, start_time; delay=delay)
+function record_output(f, io::IO=IOBuffer(), start_time::Float64=time(); delay=0, kw...)
+    cast = Cast(io, Header(; kw...), start_time; delay=delay)
     capture(f, cast; color = true)
     return cast
 end
 
+"""
+    struct Event
+        time::Float64
+        type::EventType
+        event_data::String
+    end
+
+Represents an event in a cast file. See also [`EventType`](@ref).
+"""
 struct Event
     time::Float64
     type::EventType
     event_data::String
 end
+
 function Event(t::Number, type::AbstractString, event_data::AbstractString)
     event_type = if type == "i"
         InputEvent
@@ -171,6 +204,11 @@ function Event(t::Number, type::AbstractString, event_data::AbstractString)
     return Event(t, event_type, event_data)
 end
 
+"""
+    Asciicast.parse_cast(io::IO) -> header, events
+
+Returns a tuple consisting of a [`Header`](@ref) and vector of [`Event`](@ref)'s.
+"""
 function parse_cast(io::IO)
     header_line = readline(io)
     header = JSON3.read(header_line, Header)
@@ -179,6 +217,19 @@ function parse_cast(io::IO)
         push!(events, Event(JSON3.read(line)...))
     end
     return (header, events)
+end
+
+"""
+    Asciicast.assets(asciinema_version = "3.6.3")
+
+Provides a collection of Documenter assets which can be used in `makedocs`,
+e.g. `makedocs(; assets=Asciicast.assets())`.
+"""
+function assets(asciinema_version = "3.6.3")
+    asciinema_js_url = "https://cdn.jsdelivr.net/npm/asciinema-player@$(asciinema_version)/dist/bundle/asciinema-player.min.js"
+    asciinema_css_url = "https://cdn.jsdelivr.net/npm/asciinema-player@$(asciinema_version)/dist/bundle/asciinema-player.min.css"
+    return [Documenter.asset(asciinema_js_url; class=:js),
+            Documenter.asset(asciinema_css_url; class=:css)]
 end
 
 end # module
