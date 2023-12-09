@@ -69,18 +69,8 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
 
     cast_from_string!(x.code, cast; doc=doc, page=page, ansicolor=ansicolor, mod=mod, multicodeblock=multicodeblock, allow_errors, x)
 
-    name = "$(uuid4()).cast"
-    raw_html = """
-    <div id="$(name)"></div>
-    <script>
-    AsciinemaPlayer.create('./assets/casts/$(name)', document.getElementById('$(name)'), { autoPlay: true, fit: false, startAt: $(0.8*delay)});
-    </script>
-    """
-
-    path = joinpath(page.workdir, "assets", "casts", name)
-    mkpath(dirname(path))
-    write(path, take!(cast.write_handle))
-
+    raw_html = sprint(show, MIME"text/html"(), cast)
+    
     # https://github.com/JuliaDocs/Documenter.jl/blob/c5a89ab8a56c9e9c77497070a57362659aadd131/src/expander_pipeline.jl#L58C4-L64C8
     node.element = Documenter.MultiOutput(MarkdownAST.CodeBlock("julia-repl", ""))
 
