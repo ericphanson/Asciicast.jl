@@ -62,15 +62,15 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
     mkpath(dirname(path))
     write(path, take!(cast.write_handle))
 
-    node.element = Documenter.MultiCodeBlock(x, "julia-repl", [])
-    for element in multicodeblock
-        push!(node.children, Documenter.Node(element))
-    end
-
     # https://github.com/JuliaDocs/Documenter.jl/blob/c5a89ab8a56c9e9c77497070a57362659aadd131/src/expander_pipeline.jl#L58C4-L64C8
-    codeblock = node.element
-    node.element = Documenter.MultiOutput(MarkdownAST.CodeBlock("julia-repl", string(x)))
-    push!(node.children, Documenter.Node(codeblock))
+    node.element = Documenter.MultiOutput(MarkdownAST.CodeBlock("julia-repl", ""))
+
+    mcb = Documenter.Node(Documenter.MultiCodeBlock(x, "julia-repl", []))
+
+    for element in multicodeblock
+        push!(mcb.children, Documenter.Node(element))
+    end
+    push!(node.children, mcb)
     push!(node.children, Documenter.Node(Documenter.MultiOutputElement(
         Dict{MIME,Any}(MIME"text/html"() => raw_html)
     )))
@@ -79,7 +79,7 @@ end
 
 
 Base.@kwdef struct FakeDoc
-    internal = (; errors = [])
+    internal = (; errors=[])
 end
 
 Base.@kwdef struct FakePage
@@ -89,15 +89,15 @@ Documenter.locrepr(::FakePage) = nothing
 
 
 
-function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(), page=FakePage(), ansicolor=true, mod = Module(), multicodeblock = MarkdownAST.CodeBlock[])
+function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(), page=FakePage(), ansicolor=true, mod=Module(), multicodeblock=MarkdownAST.CodeBlock[])
     linenumbernode = LineNumberNode(0, "REPL") # line unused, set to 0
     @debug "Evaluating @cast:\n$(x.code)"
 
 
-    for (ex, str) in Documenter.parseblock(code_string, doc, page; keywords = false,
-                                          linenumbernode = linenumbernode)
+    for (ex, str) in Documenter.parseblock(code_string, doc, page; keywords=false,
+        linenumbernode=linenumbernode)
         buffer = IOBuffer()
-        input  = droplines(str)
+        input = droplines(str)
         if !isempty(input)
             push!(multicodeblock, MarkdownAST.CodeBlock("julia-repl", prepend_prompt(input)))
             write_event!(cast, InputEvent, input)
@@ -109,8 +109,8 @@ function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(
             # see https://github.com/JuliaLang/julia/pull/33864
             ex = REPL.softscope!(ex)
         end
-        c = capture(cast; rethrow = InterruptException, color = ansicolor,
-        process = str -> remove_sandbox_from_output(str, mod)) do
+        c = capture(cast; rethrow=InterruptException, color=ansicolor,
+            process=str -> remove_sandbox_from_output(str, mod)) do
             cd(page.workdir) do
                 Core.eval(mod, ex)
             end
