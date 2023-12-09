@@ -1,5 +1,16 @@
 # Documenter usage
 
+To use Asciicast with documenter, the [asciinema-player](https://github.com/asciinema/asciinema-player) javascript and CSS assets must be provided to Documenter in `makedocs` in your `docs/make.jl` file.
+
+This can be done using the [`Asciicast.assets`](@ref) function, e.g.
+
+```julia
+makedocs(;
+    # ...
+    assets = Asciicast.assets()
+)
+```
+
 ## `@cast` blocks
 
 Asciicast.jl works as a Documenter plugin, providing `@cast` blocks which work similarly to `@repl` blocks. For example:

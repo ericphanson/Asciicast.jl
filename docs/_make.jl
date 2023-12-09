@@ -4,7 +4,6 @@ using Documenter, Asciicast
 
 asciinema_version = "3.6.3"
 asciinema_js_url = "https://cdn.jsdelivr.net/npm/asciinema-player@$(asciinema_version)/dist/bundle/asciinema-player.min.js"
-
 asciinema_css_url = "https://cdn.jsdelivr.net/npm/asciinema-player@$(asciinema_version)/dist/bundle/asciinema-player.min.css"
 
 makedocs(;
@@ -16,8 +15,7 @@ makedocs(;
         ansicolor=true,
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://ericphanson.github.io/Asciicast.jl",
-        assets=[asset(asciinema_js_url, class=:js),
-                asset(asciinema_css_url, class=:css)],
+        assets=Asciicast.assets(),
     ),
     pages=[
         "Home" => "index.md",

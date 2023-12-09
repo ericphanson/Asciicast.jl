@@ -17,6 +17,23 @@ export @cast_str
 const Object = Dict{String, String}
 
 # https://github.com/asciinema/asciinema/blob/2c8af028dec448bb51ec0a1848e96a08121827b0/doc/asciicast-v2.md
+"""
+    Base.@kwdef struct Header
+        version::Int=2
+        width::Int=80
+        height::Int=24
+        timestamp::Union{Int, Nothing}=floor(Int, datetime2unix(now()))
+        duration::Union{Float64, Nothing}=nothing
+        idle_time_limit::Union{Float64, Nothing}=nothing
+        command::Union{String, Nothing}=nothing
+        title::Union{String, Nothing}=nothing
+        env::Union{Object,Nothing}=Object("SHELL" => get(ENV, "SHELL", "/bin/bash"),
+                                                "TERM" => get(ENV, "TERM", "xterm-256color"))
+        theme::Union{Object,Nothing}=nothing
+    end
+
+The header of an asciicast file. Documented at <https://github.com/asciinema/asciinema/blob/v2.4.0/doc/asciicast-v2.md#header>.
+"""
 Base.@kwdef struct Header
     version::Int=2
     width::Int=80
@@ -180,6 +197,19 @@ function parse_cast(io::IO)
         push!(events, Event(JSON3.read(line)...))
     end
     return (header, events)
+end
+
+"""
+    assets(asciinema_version = "3.6.3")
+
+Provides a collection of Documenter assets which can be used in `makedocs`,
+e.g. `makedocs(; assets=Asciicast.assets())`.
+"""
+function assets(asciinema_version = "3.6.3")
+    asciinema_js_url = "https://cdn.jsdelivr.net/npm/asciinema-player@$(asciinema_version)/dist/bundle/asciinema-player.min.js"
+    asciinema_css_url = "https://cdn.jsdelivr.net/npm/asciinema-player@$(asciinema_version)/dist/bundle/asciinema-player.min.css"
+    return [Documenter.asset(asciinema_js_url; class=:js),
+            Documenter.asset(asciinema_css_url; class=:css)]
 end
 
 end # module

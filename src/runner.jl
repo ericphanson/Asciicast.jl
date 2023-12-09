@@ -1,7 +1,7 @@
 
 abstract type CastBlocks <: ExpanderPipeline end
 
-Selectors.order(::Type{CastBlocks}) = 12.0
+Selectors.order(::Type{CastBlocks}) = 9.1 # just after REPL blocks
 Selectors.matcher(::Type{CastBlocks}, node, page, doc) = iscode(node, r"^@cast")
 
 # We can't just run the actual REPLBlocks, because then we have no timing information.
