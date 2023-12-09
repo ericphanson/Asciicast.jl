@@ -74,7 +74,7 @@ end
         @test !all(event.type == OutputEvent for event in events)
         @test issorted(event.time for event in events)
         @test events[1].type == InputEvent
-        @test events[1].event_data == "@info \"Hello!\""
+        @test strip(events[1].event_data) == "@info \"Hello!\""
     end
 end
 
