@@ -7,6 +7,7 @@ export @cast_str
 
 const Object = Dict{String, String}
 
+# https://github.com/asciinema/asciinema/blob/2c8af028dec448bb51ec0a1848e96a08121827b0/doc/asciicast-v2.md
 Base.@kwdef struct Header
     version::Int=2
     width::Int=80
@@ -115,22 +116,51 @@ include("capture.jl")
 include("runner.jl")
 
 """
-    record_output(f, filepath, h::Header=Header(), start_time::Float64=time(); delay=0) -> filepath
+    record_output(f, filepath::AbstractString, h::Header=Header(), start_time::Float64=time(); delay=0) -> filepath
+    record_output(f, io::IO,  h::Header=Header(), start_time::Float64=time(); delay=0)
 
-Executes `f()` while saving all output to a cast that's located at `filepath`. `filepath` may
-be of any type but must support `open`.
+Executes `f()` while saving all output to a cast whose data is saved to `io`, or to a file at `filepath`.
 
 The parameters of the cast may be passed here; see [`Cast`](@ref) for more details.
+
+Returns a `Cast` object.
 """
-function record_output(f, filepath, h::Header=Header(), start_time::Float64=time(); delay=0)
-    # I'd like to return the `cast` here, but I also want it to write directly to a file handle to disk
-    # to support very long casts that might not fit into memory. And I don't want to return a reference
-    # to the file handle inside the cast object. Not sure what to do.
+function record_output(f, filepath::AbstractString, args...; kw...)
     open(filepath; write=true) do io
-        cast = Cast(io, h, start_time; delay=delay)
-        capture(f, cast; color = true)
+        return record_output(f, io, args...; kw...)
     end
-    return filepath
+end
+
+function record_output(f, io::IO,  h::Header=Header(), start_time::Float64=time(); delay=0)
+    cast = Cast(io, h, start_time; delay=delay)
+    capture(f, cast; color = true)
+    return cast
+end
+
+struct Event
+    time::Float64
+    type::EventType
+    event_data::String
+end
+function Event(t::Float64, type::AbstractString, event_data::AbstractString)
+    event_type = if type == "i"
+        InputEvent
+    elseif type == "o"
+        OutputEvent
+    else
+        error("Unexpected event type $type")
+    end
+    return Event(t, event_type, event_data)
+end
+
+function parse_cast(io::IO)
+    header_line = readline(io)
+    header = JSON3.read(header_line, Header)
+    events = Event[]
+    for line in eachline(io)
+        push!(events, Event(JSON3.read(line)...))
+    end
+    return (header, events)
 end
 
 end # module
