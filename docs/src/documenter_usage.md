@@ -5,14 +5,14 @@
 Asciicast.jl works as a Documenter plugin, providing `@cast` blocks which work similarly to `@repl` blocks. For example:
 
 ````markdown
-```@cast repl=true
+```@cast
 using Pkg
 Pkg.status()
 1 + 1
 ```
 ````
 
-The above `@cast repl=true` block will effectively generate both a standard Documenter `@repl` block:
+The above `@cast` block will effectively generate both a standard Documenter `@repl` block:
 
 
 ````markdown

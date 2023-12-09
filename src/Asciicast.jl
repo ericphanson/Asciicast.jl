@@ -9,6 +9,7 @@ using Documenter
 using Documenter: Expanders, Selectors, iscode, _any_color_fmt, droplines, prepend_prompt, remove_sandbox_from_output
 using Documenter.Expanders: ExpanderPipeline
 using UUIDs
+using MarkdownAST
 
 export Cast, OutputEvent, InputEvent, write_event!, record_output
 export @cast_str
@@ -160,6 +161,7 @@ struct Event
     type::EventType
     event_data::String
 end
+
 function Event(t::Number, type::AbstractString, event_data::AbstractString)
     event_type = if type == "i"
         InputEvent

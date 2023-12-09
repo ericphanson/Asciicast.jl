@@ -4,60 +4,18 @@ abstract type CastBlocks <: ExpanderPipeline end
 Selectors.order(::Type{CastBlocks}) = 12.0
 Selectors.matcher(::Type{CastBlocks}, node, page, doc) = iscode(node, r"^@cast")
 
-
-
-using MarkdownAST
-
 # Slightly modified from:
 # https://github.com/JuliaDocs/Documenter.jl/blob/c5a89ab8a56c9e9c77497070a57362659aadd131/src/expander_pipeline.jl#L810C1-L881C1
 function Selectors.runner(::Type{CastBlocks}, node, page, doc)
     @assert node.element isa MarkdownAST.CodeBlock
     x = node.element
-
-    matched = match(r"^@cast(?:\s+([^\s;]+))?\s*(;.*)?$", x.info)
-    matched === nothing && error("invalid '@cast' syntax: $(x.info)")
-    name, kwargs = matched.captures
-
-    # Bail early if in draft mode
-    if Documenter.is_draft(doc, page)
-        @debug "Skipping evaluation of @cast block in draft mode:\n$(x.code)"
-        create_draft_result!(node; blocktype="@cast")
-        return
-    end
-
-    # The sandboxed module -- either a new one or a cached one from this page.
-    mod = Documenter.get_sandbox_module!(page.globals.meta, "atexample", name)
-
-    # "parse" keyword arguments to repl
-    ansicolor = _any_color_fmt(doc)
+    x.info = replace(x.info, "@cast" => "@repl")
+    Selectors.runner(Expanders.REPLBlocks, node, page, doc)
     delay = 0.5
-    if kwargs !== nothing
-        matched = match(r"\bansicolor\s*=\s*(true|false)\b", kwargs)
-        if matched !== nothing
-            ansicolor = matched[1] == "true"
-        end
-
-        # match integer delay
-        matched = match(r"\bdelay\s*=\s*([0-9]+)", kwargs)
-        if matched !== nothing
-            delay = convert(Float64, parse(Int, matched[1]))
-        else
-            # match float delay
-            matched = match(r"\bdelay\s*=\s*((?:[0-9]*[.])?[0-9]+)", kwargs)
-            if matched !== nothing
-                delay = parse(Float64, matched[1])
-            end
-        end
-    end
-
-    multicodeblock = MarkdownAST.CodeBlock[]
-
     n_lines = length(split(x.code))
-    height = min(n_lines*2, 24) # try to choose the number of lines more appropriately
+    height = min(n_lines * 2 + 1, 24) # try to choose the number of lines more appropriately
     cast = Cast(IOBuffer(), Header(; height, idle_time_limit=1); delay=delay)
-
-    cast_from_string!(x.code, cast; doc=doc, page=page, ansicolor=ansicolor, mod=mod, multicodeblock=multicodeblock)
-
+    code_blocks_to_cast!(cast, node.children; repl=true)
     name = "$(uuid4()).cast"
     raw_html = """
     <div id="$(name)"></div>
@@ -65,93 +23,60 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
     AsciinemaPlayer.create('./assets/casts/$(name)', document.getElementById('$(name)'), { autoPlay: true, fit: false, startAt: $(0.8*delay)});
     </script>
     """
-
     path = joinpath(page.workdir, "assets", "casts", name)
     mkpath(dirname(path))
     write(path, take!(cast.write_handle))
 
-    # https://github.com/JuliaDocs/Documenter.jl/blob/c5a89ab8a56c9e9c77497070a57362659aadd131/src/expander_pipeline.jl#L58C4-L64C8
+    mcb = MarkdownAST.Node(node.element)
     node.element = Documenter.MultiOutput(MarkdownAST.CodeBlock("julia-repl", ""))
 
-    mcb = Documenter.Node(Documenter.MultiCodeBlock(x, "julia-repl", []))
-
-    for element in multicodeblock
-        push!(mcb.children, Documenter.Node(element))
+    # Here, we move the children of `node` to be children of `mcb`
+    # `collect` seems necessary, which is weird
+    for elt in collect(node.children)
+        push!(mcb.children, elt)
     end
+
+    # Now we place our own children
+    empty!(node.children)
+
     push!(node.children, mcb)
     push!(node.children, Documenter.Node(Documenter.MultiOutputElement(
         Dict{MIME,Any}(MIME"text/html"() => raw_html)
     )))
-
+    return cast
 end
 
-
-Base.@kwdef struct FakeDoc
-    internal = (; errors=[])
+function strip_prompt(line)
+    prompt = match(Documenter.PROMPT_REGEX, line)
+    prompt === nothing && return line
+    return prompt[1]
 end
 
-Base.@kwdef struct FakePage
-    workdir = pwd()
-end
-Documenter.locrepr(::FakePage) = nothing
-
-
-
-function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(), page=FakePage(), ansicolor=true, mod=Module(), multicodeblock=MarkdownAST.CodeBlock[])
-    linenumbernode = LineNumberNode(0, "REPL") # line unused, set to 0
-    @debug "Evaluating @cast:\n$(x.code)"
-
-    pb = Documenter.parseblock(code_string, doc, page; keywords=false,
-    linenumbernode=linenumbernode)
-    n = length(pb)
-    for (i, (ex, str)) in enumerate(pb)
-        buffer = IOBuffer()
-        input = droplines(str)
-        if !isempty(input)
-            push!(multicodeblock, MarkdownAST.CodeBlock("julia-repl", prepend_prompt(input)))
-            write_event!(cast, InputEvent, input)
-            write_event!(cast, OutputEvent, prepend_prompt(input) * "\n")
+function code_blocks_to_cast!(cast, code_blocks; repl)
+    for block in code_blocks
+        block = block.element
+        if repl && block.info == "julia-repl"
+            write_event!(cast, InputEvent, strip_prompt(block.code) * "\n")
         end
-
-        if VERSION >= v"1.5.0-DEV.178"
-            # Use the REPL softscope for REPLBlocks,
-            # see https://github.com/JuliaLang/julia/pull/33864
-            ex = REPL.softscope!(ex)
-        end
-        c = capture(cast; rethrow=InterruptException, color=ansicolor,
-            process=str -> remove_sandbox_from_output(str, mod)) do
-            cd(page.workdir) do
-                Core.eval(mod, ex)
-            end
-        end
-        Core.eval(mod, Expr(:global, Expr(:(=), :ans, QuoteNode(c.value))))
-        output = if !c.error
-            hide = REPL.ends_with_semicolon(input)
-            Documenter.result_to_string(buffer, hide ? nothing : c.value)
+        str = block.code
+        if !isempty(str) && block.info != "julia-repl"
+            str *= "\n\n"
         else
-            Documenter.error_to_string(buffer, c.value, [])
+            str *= "\n"
         end
-
-        out = IOBuffer()
-        if isempty(input) || isempty(output)
-            println(out)
-        else
-            println(out, output, "\n")
-        end
-        outstr = String(take!(out))
-        # Replace references to gensym'd module with Main
-        outstr = remove_sandbox_from_output(outstr, mod)
-        if i == n
-            trimmed = chomp(outstr)
-            if !isempty(trimmed)
-                write_event!(cast, OutputEvent, trimmed)
-            end
-
-        else
-            write_event!(cast, OutputEvent, outstr)
-        end
-        push!(multicodeblock, MarkdownAST.CodeBlock("documenter-ansi", rstrip(outstr)))
+        write_event!(cast, OutputEvent, str)
     end
+    return cast
+end
+
+function _cast(code; delay=0)
+    node = MarkdownAST.Node(MarkdownAST.CodeBlock("@repl", code))
+    Selectors.runner(Expanders.REPLBlocks, node, FakePage(), FakeDoc())
+    n_lines = length(split(code)) - 2
+    height = min(n_lines * 2 + 1, 24) # try to choose the number of lines more appropriately
+    cast = Cast(IOBuffer(), Header(; height, idle_time_limit=1); delay=delay)
+    code_blocks_to_cast!(cast, node.children; repl=true)
+    return cast
 end
 
 
@@ -172,7 +97,16 @@ Asciicast.save("test.cast", c)
 
 """
 macro cast_str(code_string, delay=0)
-    cast = Cast(IOBuffer(); delay=delay)
-    cast_from_string!(code_string, cast)
-    return cast
+    return _cast(code_string; delay)
 end
+
+Base.@kwdef struct FakeDoc
+    internal = (; errors=[])
+end
+Documenter.is_draft(::FakeDoc) = false
+Documenter._any_color_fmt(::FakeDoc) = true
+Base.@kwdef struct FakePage
+    workdir = pwd()
+    globals = Documenter.Globals()
+end
+Documenter.locrepr(::FakePage) = nothing
