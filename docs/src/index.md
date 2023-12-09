@@ -48,7 +48,7 @@ write_event!(cast, OutputEvent, "\nDone!")
 cast
 ```
 
-Such a `Cast` can be saved to a `.cast` file using [`Asciicast.save`](@ref). These files are JSON lines files, which can be read with `JSON3.read` with the `jsonlines=true` keyword argument. They can also be parsed with [`Asciicast.parse_cast`](@ref). They can be played in the terminal or uploaded to <asciinema.org> with [asciinema](https://github.com/asciinema/asciinema). Note that Asciicast.jl does not upload or embed any casts, using a local player instead.
+Such a `Cast` can be saved to a `.cast` file using [`Asciicast.save`](@ref). These files are JSON lines files, which can be read with `JSON3.read` with the `jsonlines=true` keyword argument. They can also be parsed with [`Asciicast.parse_cast`](@ref). They can be played in the terminal or uploaded to <asciinema.org> with [asciinema](https://github.com/asciinema/asciinema), and converted to gifs with [agg](https://github.com/asciinema/agg). Note that Asciicast.jl does not upload or embed any casts, using a local player instead.
 
 ## API Reference
 
