@@ -1,8 +1,5 @@
 # Modified from:
 # <https://github.com/JuliaDocs/IOCapture.jl/blob/cea20507cff4e080a94a386c811e6d3d5945d327/src/IOCapture.jl>
-using Logging
-import Random
-
 # pass a `cast` to write events to it "as they happen".
 # pass a `process` function to modify the event data before writing it.
 function capture(f, cast::Cast; rethrow::Type=Any, color::Bool=false, process=identity)

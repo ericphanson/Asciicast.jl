@@ -1,24 +1,32 @@
-using Markdown
-using REPL
-using Documenter
-using Documenter: Utilities, Expanders, Documents
-using Documenter.Utilities: Selectors
-using Documenter.Expanders: ExpanderPipeline, iscode, _any_color_fmt, droplines, prepend_prompt, remove_sandbox_from_output
-using UUIDs
 
 abstract type CastBlocks <: ExpanderPipeline end
 
 Selectors.order(::Type{CastBlocks}) = 12.0
 Selectors.matcher(::Type{CastBlocks}, node, page, doc) = iscode(node, r"^@cast")
 
+
+
+using MarkdownAST
+
 # Slightly modified from:
-# https://github.com/JuliaDocs/Documenter.jl/blob/68dbd53d4ff6b339e795a4a3328955ad5c689e0e/src/Expanders.jl#L638-L696
-function Selectors.runner(::Type{CastBlocks}, x, page, doc)
-    matched = match(r"^@cast(?:\s+([^\s;]+))?\s*(;.*)?$", x.language)
-    matched === nothing && error("invalid '@cast' syntax: $(x.language)")
+# https://github.com/JuliaDocs/Documenter.jl/blob/c5a89ab8a56c9e9c77497070a57362659aadd131/src/expander_pipeline.jl#L810C1-L881C1
+function Selectors.runner(::Type{CastBlocks}, node, page, doc)
+    @assert node.element isa MarkdownAST.CodeBlock
+    x = node.element
+
+    matched = match(r"^@cast(?:\s+([^\s;]+))?\s*(;.*)?$", x.info)
+    matched === nothing && error("invalid '@cast' syntax: $(x.info)")
     name, kwargs = matched.captures
+
+    # Bail early if in draft mode
+    if Documenter.is_draft(doc, page)
+        @debug "Skipping evaluation of @cast block in draft mode:\n$(x.code)"
+        create_draft_result!(node; blocktype="@cast")
+        return
+    end
+
     # The sandboxed module -- either a new one or a cached one from this page.
-    mod = Utilities.get_sandbox_module!(page.globals.meta, "atexample", name)
+    mod = Documenter.get_sandbox_module!(page.globals.meta, "atexample", name)
 
     # "parse" keyword arguments to repl
     ansicolor = _any_color_fmt(doc)
@@ -42,18 +50,31 @@ function Selectors.runner(::Type{CastBlocks}, x, page, doc)
         end
     end
 
-    multicodeblock = Markdown.Code[]
+    multicodeblock = MarkdownAST.CodeBlock[]
     cast = Cast(IOBuffer(); delay=delay)
+
     cast_from_string!(x.code, cast; doc=doc, page=page, ansicolor=ansicolor, mod=mod, multicodeblock=multicodeblock)
-    
+
     name = "$(uuid4()).cast"
-    raw_html = Documents.RawHTML("""<asciinema-player src="./assets/casts/$(name)" idle-time-limit="1" autoplay="true" start-at="0.3"></asciinema-player >""")
+    raw_html = """<asciinema-player src="./assets/casts/$(name)" idle-time-limit="1" autoplay="true" start-at="0.3"></asciinema-player >"""
 
     path = joinpath(page.workdir, "assets", "casts", name)
     mkpath(dirname(path))
     write(path, take!(cast.write_handle))
 
-    page.mapping[x] = Documents.MultiOutput([Documents.MultiCodeBlock("julia-repl", multicodeblock), raw_html])
+    node.element = Documenter.MultiCodeBlock(x, "julia-repl", [])
+    for element in multicodeblock
+        push!(node.children, Documenter.Node(element))
+    end
+
+    # https://github.com/JuliaDocs/Documenter.jl/blob/c5a89ab8a56c9e9c77497070a57362659aadd131/src/expander_pipeline.jl#L58C4-L64C8
+    codeblock = node.element
+    node.element = Documenter.MultiOutput(MarkdownAST.CodeBlock("julia-repl", string(x)))
+    push!(node.children, Documenter.Node(codeblock))
+    push!(node.children, Documenter.Node(Documenter.MultiOutputElement(
+        Dict{MIME,Any}(MIME"text/html"() => raw_html)
+    )))
+
 end
 
 
@@ -64,23 +85,25 @@ end
 Base.@kwdef struct FakePage
     workdir = pwd()
 end
-Utilities.locrepr(::FakePage) = nothing
+Documenter.locrepr(::FakePage) = nothing
 
 
 
-function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(), page=FakePage(), ansicolor=true, mod = Module(), multicodeblock = Markdown.Code[])
+function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(), page=FakePage(), ansicolor=true, mod = Module(), multicodeblock = MarkdownAST.CodeBlock[])
     linenumbernode = LineNumberNode(0, "REPL") # line unused, set to 0
     @debug "Evaluating @cast:\n$(x.code)"
-    for (ex, str) in Utilities.parseblock(code_string, doc, page; keywords = false,
+
+
+    for (ex, str) in Documenter.parseblock(code_string, doc, page; keywords = false,
                                           linenumbernode = linenumbernode)
         buffer = IOBuffer()
         input  = droplines(str)
         if !isempty(input)
-            push!(multicodeblock, Markdown.Code("julia-repl", prepend_prompt(input)))
+            push!(multicodeblock, MarkdownAST.CodeBlock("julia-repl", prepend_prompt(input)))
             write_event!(cast, InputEvent, input)
             write_event!(cast, OutputEvent, prepend_prompt(input) * "\n")
         end
-        
+
         if VERSION >= v"1.5.0-DEV.178"
             # Use the REPL softscope for REPLBlocks,
             # see https://github.com/JuliaLang/julia/pull/33864
@@ -95,9 +118,9 @@ function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(
         Core.eval(mod, Expr(:global, Expr(:(=), :ans, QuoteNode(c.value))))
         output = if !c.error
             hide = REPL.ends_with_semicolon(input)
-            Documenter.DocTests.result_to_string(buffer, hide ? nothing : c.value)
+            Documenter.result_to_string(buffer, hide ? nothing : c.value)
         else
-            Documenter.DocTests.error_to_string(buffer, c.value, [])
+            Documenter.error_to_string(buffer, c.value, [])
         end
 
         out = IOBuffer()
@@ -110,6 +133,7 @@ function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(
         # Replace references to gensym'd module with Main
         outstr = remove_sandbox_from_output(outstr, mod)
         write_event!(cast, OutputEvent, outstr)
+        push!(multicodeblock, MarkdownAST.CodeBlock("documenter-ansi", rstrip(outstr)))
     end
 end
 

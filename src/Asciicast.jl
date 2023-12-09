@@ -1,6 +1,14 @@
 module Asciicast
 
 using JSON3, Dates, StructTypes, Base64
+using Logging
+import Random
+using Markdown
+using REPL
+using Documenter
+using Documenter: Expanders, Selectors, iscode, _any_color_fmt, droplines, prepend_prompt, remove_sandbox_from_output
+using Documenter.Expanders: ExpanderPipeline
+using UUIDs
 
 export Cast, OutputEvent, InputEvent, write_event!, record_output
 export @cast_str

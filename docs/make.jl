@@ -4,7 +4,7 @@ asciinema_version = "2.6.1"
 makedocs(;
     modules=[Asciicast],
     authors="Eric P. Hanson",
-    repo="https://github.com/ericphanson/Asciicast.jl/blob/{commit}{path}#L{line}",
+    repo=Remotes.GitHub("ericphanson", "Asciicast.jl"),
     sitename="Asciicast.jl",
     format=Documenter.HTML(;
         ansicolor=true,
