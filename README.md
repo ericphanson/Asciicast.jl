@@ -77,6 +77,3 @@ asciinema-player to play the resulting cast.
 
 This feature requires the necessary JS and CSS files are added to `assets` in `makedocs`. See [docs/make.jl](docs/make.jl) for an example.
 
-## Note
-
-This package is unregistered and experimental, and there are currently no tests.
