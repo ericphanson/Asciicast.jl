@@ -54,7 +54,7 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
 
     n_lines = length(split(x.code))
     height = min(n_lines*2, 24) # try to choose the number of lines more appropriately
-    cast = Cast(IOBuffer(), Header(; height, idle_time_limit=1), 0.8*delay; delay=delay)
+    cast = Cast(IOBuffer(), Header(; height, idle_time_limit=1); delay=delay)
 
     cast_from_string!(x.code, cast; doc=doc, page=page, ansicolor=ansicolor, mod=mod, multicodeblock=multicodeblock)
 
@@ -62,7 +62,7 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
     raw_html = """
     <div id="$(name)"></div>
     <script>
-    AsciinemaPlayer.create('./assets/casts/$(name)', document.getElementById('$(name)'), { autoPlay: true, fit: false});
+    AsciinemaPlayer.create('./assets/casts/$(name)', document.getElementById('$(name)'), { autoPlay: true, fit: false, startAt: $(0.8*delay)});
     </script>
     """
 
@@ -156,7 +156,7 @@ end
 
 
 """
-    @cast_str(code_string, delay=0.5) -> Cast
+    @cast_str(code_string, delay=0) -> Cast
 
 Creates a [`Cast`](@ref) object by executing the code in `code_string` in a REPL-like environment.
 
@@ -171,7 +171,7 @@ Asciicast.save("test.cast", c)
 ```
 
 """
-macro cast_str(code_string, delay=0.5)
+macro cast_str(code_string, delay=0)
     cast = Cast(IOBuffer(); delay=delay)
     cast_from_string!(code_string, cast)
     return cast
