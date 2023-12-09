@@ -51,6 +51,11 @@ end
 StructTypes.StructType(::Type{Header}) = StructTypes.Struct()
 StructTypes.omitempties(::Type{Header}) = true
 
+"""
+    Asciicast.EventType
+
+An enum consisting of `Asciicast.OutputEvent` and `Asciicast.InputEvent`.
+"""
 @enum EventType OutputEvent InputEvent
 
 # Some methods inspired by ArgTools.jl to try to be
@@ -152,10 +157,10 @@ include("capture.jl")
 include("runner.jl")
 
 """
-    record_output(f, filepath::AbstractString, h::Header=Header(), start_time::Float64=time(); delay=0) -> filepath
-    record_output(f, io::IO=IOBuffer(), h::Header=Header(), start_time::Float64=time(); delay=0)
+    record_output(f, filepath::AbstractString, start_time::Float64=time(); delay=0, kw...) -> filepath
+    record_output(f, io::IO=IOBuffer(), start_time::Float64=time(); delay=0, kw...)
 
-Executes `f()` while saving all output to a cast whose data is saved to `io`, or to a file at `filepath`.
+Executes `f()` while saving all output to a cast whose data is saved to `io`, or to a file at `filepath`. The arguments `kw...` may be any keyword arguments accepted by [`Header`](@ref).
 
 The parameters of the cast may be passed here; see [`Cast`](@ref) for more details.
 
@@ -167,17 +172,27 @@ function record_output(f, filepath::AbstractString, args...; kw...)
     end
 end
 
-function record_output(f, io::IO=IOBuffer(),  h::Header=Header(), start_time::Float64=time(); delay=0)
-    cast = Cast(io, h, start_time; delay=delay)
+function record_output(f, io::IO=IOBuffer(), start_time::Float64=time(); delay=0, kw...)
+    cast = Cast(io, Header(; kw...), start_time; delay=delay)
     capture(f, cast; color = true)
     return cast
 end
 
+"""
+    struct Event
+        time::Float64
+        type::EventType
+        event_data::String
+    end
+
+Represents an event in a cast file. See also [`EventType`](@ref).
+"""
 struct Event
     time::Float64
     type::EventType
     event_data::String
 end
+
 function Event(t::Number, type::AbstractString, event_data::AbstractString)
     event_type = if type == "i"
         InputEvent
@@ -189,6 +204,11 @@ function Event(t::Number, type::AbstractString, event_data::AbstractString)
     return Event(t, event_type, event_data)
 end
 
+"""
+    Asciicast.parse_cast(io::IO) -> header, events
+
+Returns a tuple consisting of a [`Header`](@ref) and vector of [`Event`](@ref)'s.
+"""
 function parse_cast(io::IO)
     header_line = readline(io)
     header = JSON3.read(header_line, Header)
@@ -200,7 +220,7 @@ function parse_cast(io::IO)
 end
 
 """
-    assets(asciinema_version = "3.6.3")
+    Asciicast.assets(asciinema_version = "3.6.3")
 
 Provides a collection of Documenter assets which can be used in `makedocs`,
 e.g. `makedocs(; assets=Asciicast.assets())`.
