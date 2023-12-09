@@ -34,15 +34,18 @@ Pkg.status()
 ````
 and some raw HTML output:
 ````html
-<div id="dc05156e-99be-4621-80d5-cdd48b72f313.cast"></div>
+<div id="d59ee38d-184a-4888-8749-41b4df76ae3b"></div>
 <script>
-AsciinemaPlayer.create('./assets/casts/dc05156e-99be-4621-80d5-cdd48b72f313.cast', document.getElementById('dc05156e-99be-4621-80d5-cdd48b72f313.cast'), { autoPlay: true, fit: false, startAt: 0.4});
+AsciinemaPlayer.create(
+'data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6ODAsImhlaWdodCI6MTIsInRpbWVzdGFtcCI6MTcwMjE1ODMyMywiaWRsZV90aW1lX2xpbWl0IjoxLjAsImVudiI6eyJURVJNIjoieHRlcm0tMjU2Y29sb3IiLCJTSEVMTCI6Ii9iaW4venNoIn19ClswLjAwMTA5ODE1NTk3NTM0MTc5NjksImkiLCJ1c2luZyBQa2ciXQ0KWzAuNTAxMzQ1MTU3NjIzMjkxLCJvIiwianVsaWE+IHVzaW5nIFBrZ1xyXG4iXQ0KWzEuMDAyODIxMjA3MDQ2NTA4OCwibyIsIiJdDQpbMS41MDI5NzAyMTg2NTg0NDczLCJvIiwiXHJcbiJdDQpbMi4wMDI5NzQ5ODcwMzAwMjkzLCJpIiwiUGtnLnN0YXR1cygpIl0NClsyLjUwMjk3NjE3OTEyMjkyNSwibyIsImp1bGlhPiBQa2cuc3RhdHVzKClcclxuIl0NClszLjAxNTQ2MDAxNDM0MzI2MTcsIm8iLCJcdTAwMWJbMzJtXHUwMDFiWzFtU3RhdHVzXHUwMDFiWzIybVx1MDAxYlszOW0gIl0NClszLjUxNTUwNDEyMTc4MDM5NTUsIm8iLCJgfi9Bc2NpaWNhc3QuamwvZG9jcy9Qcm9qZWN0LnRvbWxgXHJcbiJdDQpbNC4wMTcxMTMyMDg3NzA3NTIsIm8iLCIgICJdDQpbNC41MTcxOTQwMzI2NjkwNjcsIm8iLCJcdTAwMWJbOTBtWzI2MDBkNDQ1XSBcdTAwMWJbMzltQXNjaWljYXN0IHYwLjEuMCBgLi5gIl0NCls1LjAxNzIzODE0MDEwNjIwMSwibyIsIlxyXG4gIl0NCls1LjUxNzI3NzAwMjMzNDU5NSwibyIsIiBcdTAwMWJbOTBtW2UzMDE3MmY1XSBcdTAwMWJbMzltIl0NCls2LjAxNzMxNTE0OTMwNzI1MSwibyIsIkRvY3VtZW50ZXIgdjEuMi4xXHJcbiJdDQpbNi41MTc3NzAwNTE5NTYxNzcsIm8iLCIiXQ0KWzcuMDE3OTI0MDcwMzU4Mjc2LCJvIiwiXHJcbiJdDQpbNy41MTc5MzIxNzY1ODk5NjYsImkiLCIxICsgMSJdDQpbOC4wMTc5MzMxMzAyNjQyODIsIm8iLCJqdWxpYT4gMSArIDFcclxuIl0NCls4LjUxODA5MzEwOTEzMDg2LCJvIiwiIl0NCls5LjAxODU5NDAyNjU2NTU1MiwibyIsIjJcclxuIl0NCg==',
+document.getElementById('d59ee38d-184a-4888-8749-41b4df76ae3b'), { autoPlay: true, fit: false}
+);
 </script>
 ````
 
-Here, the name of the file is randomly generated with `uuid4()`, and the file itself is saved in the `assets` directory.
+Here, the `id` is randomly generated with `uuid4()`, and the contents of the cast itself are base64-encoded and inlined into the HTML. Note: I initially tried saving these as separate files, but had trouble with casts not showing up on deployed pages, while inlining works reliably every time.
 
-This looks like:
+The output of this looks like:
 
 ```@cast
 using Pkg
