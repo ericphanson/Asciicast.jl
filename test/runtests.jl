@@ -80,3 +80,6 @@ end
         @test events[1].event_data == "@info \"Hello!\""
     end
 end
+
+# Finally, test the docs build:
+include(joinpath(pkgdir(Asciicast), "docs", "_make.jl"))
