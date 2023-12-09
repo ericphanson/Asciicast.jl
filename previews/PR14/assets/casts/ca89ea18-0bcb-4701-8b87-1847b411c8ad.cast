@@ -1,0 +1,9 @@
+{"version":2,"width":80,"height":8,"timestamp":1702137593,"idle_time_limit":1.0,"env":{"TERM":"xterm-256color","SHELL":"/bin/bash"}}
+[0.0002307891845703125,"i","y = x+1"]
+[0.5002338886260986,"o","julia> y = x+1\r\n"]
+[1.0004479885101318,"o",""]
+[1.5006349086761475,"o","0\r\n\r\n"]
+[2.000642776489258,"i","sqrt(x)"]
+[2.5006449222564697,"o","julia> sqrt(x)\r\n"]
+[3.0089919567108154,"o",""]
+[4.125884771347046,"o","ERROR: DomainError with -1.0:\r\nsqrt will only return a complex result if called with a complex argument. Try sqrt(Complex(x)).\r\n"]
