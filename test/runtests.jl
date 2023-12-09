@@ -1,5 +1,5 @@
 using Asciicast
-using Test, JSON3, Dates
+using Test, JSON3, Dates, Aqua
 using Asciicast: Event, Header, OutputEvent, InputEvent, parse_cast
 
 function test_default_header(header)
@@ -9,6 +9,10 @@ function test_default_header(header)
 end
 
 @testset "Asciicast.jl" begin
+    @testset "Aqua" begin
+        Aqua.test_all(Asciicast)
+    end
+
     @testset "Example 1" begin
         io = IOBuffer()
         cast = Cast(io)

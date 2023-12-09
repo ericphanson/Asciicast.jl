@@ -3,7 +3,6 @@ module Asciicast
 using JSON3, Dates, StructTypes, Base64
 using Logging
 import Random
-using Markdown
 using REPL
 using Documenter
 using Documenter: Expanders, Selectors, iscode, _any_color_fmt, droplines, prepend_prompt, remove_sandbox_from_output
@@ -27,9 +26,9 @@ const Object = Dict{String, String}
         idle_time_limit::Union{Float64, Nothing}=nothing
         command::Union{String, Nothing}=nothing
         title::Union{String, Nothing}=nothing
-        env::Union{Object,Nothing}=Object("SHELL" => get(ENV, "SHELL", "/bin/bash"),
+        env::Union{$Object,Nothing}=$Object("SHELL" => get(ENV, "SHELL", "/bin/bash"),
                                                 "TERM" => get(ENV, "TERM", "xterm-256color"))
-        theme::Union{Object,Nothing}=nothing
+        theme::Union{$Object,Nothing}=nothing
     end
 
 The header of an asciicast file. Documented at <https://github.com/asciinema/asciinema/blob/v2.4.0/doc/asciicast-v2.md#header>.
