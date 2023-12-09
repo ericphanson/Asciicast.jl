@@ -23,9 +23,3 @@ makedocs(;
         "Home" => "index.md",
     ],
 )
-
-deploydocs(;
-    repo="github.com/ericphanson/Asciicast.jl",
-    push_preview=true,
-    devbranch="main"
-)
