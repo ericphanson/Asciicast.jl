@@ -13,39 +13,39 @@ Pkg.status()
 ```</code></pre><p>and some raw HTML output:</p><pre><code class="language-html hljs">&lt;div id=&quot;dc05156e-99be-4621-80d5-cdd48b72f313.cast&quot;&gt;&lt;/div&gt;
 &lt;script&gt;
 AsciinemaPlayer.create(&#39;./assets/casts/dc05156e-99be-4621-80d5-cdd48b72f313.cast&#39;, document.getElementById(&#39;dc05156e-99be-4621-80d5-cdd48b72f313.cast&#39;), { autoPlay: true, fit: false, startAt: 0.4});
-&lt;/script&gt;</code></pre><p>Here, the name of the file is randomly generated with <code>uuid4()</code>, and the file itself is saved in the <code>assets</code> directory.</p><p>This looks like:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using Pkg</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Pkg.status()</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; 1 + 1</code><code class="nohighlight hljs ansi" style="display:block;">2</code></pre><div id="9b1ef0c0-b12b-4982-bdf2-7be91ac06649.cast"></div>
+&lt;/script&gt;</code></pre><p>Here, the name of the file is randomly generated with <code>uuid4()</code>, and the file itself is saved in the <code>assets</code> directory.</p><p>This looks like:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using Pkg</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Pkg.status()</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; 1 + 1</code><code class="nohighlight hljs ansi" style="display:block;">2</code></pre><div id="6113bd8d-e538-44c1-acc1-d97af69ffcc1.cast"></div>
 <script>
-AsciinemaPlayer.create('./assets/casts/9b1ef0c0-b12b-4982-bdf2-7be91ac06649.cast', document.getElementById('9b1ef0c0-b12b-4982-bdf2-7be91ac06649.cast'), { autoPlay: true, fit: false, startAt: 0.4});
+AsciinemaPlayer.create('./assets/casts/6113bd8d-e538-44c1-acc1-d97af69ffcc1.cast', document.getElementById('6113bd8d-e538-44c1-acc1-d97af69ffcc1.cast'), { autoPlay: true, fit: false, startAt: 0.4});
 </script>
 <h2 id="Hiding-REPL-inputs"><a class="docs-heading-anchor" href="#Hiding-REPL-inputs">Hiding REPL inputs</a><a id="Hiding-REPL-inputs-1"></a><a class="docs-heading-anchor-permalink" href="#Hiding-REPL-inputs" title="Permalink"></a></h2><p>You can also use <code>hide_inputs=true</code> to hide the inputs, showing just the asciinema player. The syntax for that is:</p><pre><code class="language-markdown hljs">```@cast; hide_inputs=true
 using Pkg
 Pkg.status()
 1 + 1
-```</code></pre><p>This looks like:</p><div id="97a279ab-30a7-4f42-919d-aef4687bc551.cast"></div>
+```</code></pre><p>This looks like:</p><div id="552edb65-8eeb-4d13-8cab-e0f25f691df0.cast"></div>
 <script>
-AsciinemaPlayer.create('./assets/casts/97a279ab-30a7-4f42-919d-aef4687bc551.cast', document.getElementById('97a279ab-30a7-4f42-919d-aef4687bc551.cast'), { autoPlay: true, fit: false, startAt: 0.4});
+AsciinemaPlayer.create('./assets/casts/552edb65-8eeb-4d13-8cab-e0f25f691df0.cast', document.getElementById('552edb65-8eeb-4d13-8cab-e0f25f691df0.cast'), { autoPlay: true, fit: false, startAt: 0.4});
 </script>
 <h2 id="Exceptions"><a class="docs-heading-anchor" href="#Exceptions">Exceptions</a><a id="Exceptions-1"></a><a class="docs-heading-anchor-permalink" href="#Exceptions" title="Permalink"></a></h2><p>Like in <code>@repl</code> blocks, exceptions are allowed. For example:</p><pre><code class="language-markdown hljs">```@cast
 error(&quot;This is an exception!&quot;)
-```</code></pre><p>This looks like:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; error(&quot;This is an exception!&quot;)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: This is an exception!</code></pre><div id="ba40deaf-791c-4e7a-a9ad-2c0e3af1f7f1.cast"></div>
+```</code></pre><p>This looks like:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; error(&quot;This is an exception!&quot;)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: This is an exception!</code></pre><div id="ea26381e-ec1a-43e7-a6da-598a5779f2b1.cast"></div>
 <script>
-AsciinemaPlayer.create('./assets/casts/ba40deaf-791c-4e7a-a9ad-2c0e3af1f7f1.cast', document.getElementById('ba40deaf-791c-4e7a-a9ad-2c0e3af1f7f1.cast'), { autoPlay: true, fit: false, startAt: 0.4});
+AsciinemaPlayer.create('./assets/casts/ea26381e-ec1a-43e7-a6da-598a5779f2b1.cast', document.getElementById('ea26381e-ec1a-43e7-a6da-598a5779f2b1.cast'), { autoPlay: true, fit: false, startAt: 0.4});
 </script>
 <p>To prevent exceptions, use <code>allow_errors=false</code>, as in</p><pre><code class="language-markdown hljs">```@cast; allow_errors=false
 error(&quot;This is an exception!&quot;)
 ```</code></pre><h2 id="Example-with-a-named-block"><a class="docs-heading-anchor" href="#Example-with-a-named-block">Example with a named block</a><a id="Example-with-a-named-block-1"></a><a class="docs-heading-anchor-permalink" href="#Example-with-a-named-block" title="Permalink"></a></h2><p>First block:</p><pre><code class="language-markdown hljs">```@cast 1; hide_inputs=true
 x = -1
 x*x
-```</code></pre><div id="5a55e7cc-e78e-4ae9-99a9-b6c928339171.cast"></div>
+```</code></pre><div id="ce8290b9-f9f4-4ca2-8d17-6496ffc41587.cast"></div>
 <script>
-AsciinemaPlayer.create('./assets/casts/5a55e7cc-e78e-4ae9-99a9-b6c928339171.cast', document.getElementById('5a55e7cc-e78e-4ae9-99a9-b6c928339171.cast'), { autoPlay: true, fit: false, startAt: 0.4});
+AsciinemaPlayer.create('./assets/casts/ce8290b9-f9f4-4ca2-8d17-6496ffc41587.cast', document.getElementById('ce8290b9-f9f4-4ca2-8d17-6496ffc41587.cast'), { autoPlay: true, fit: false, startAt: 0.4});
 </script>
 <p>The next block continues:</p><pre><code class="language-markdown hljs">```@cast 1; hide_inputs=true
 y = x+1
 sqrt(x)
-```</code></pre><div id="ab0c58d0-165a-475c-a676-30f46a2a918a.cast"></div>
+```</code></pre><div id="6cd5adc3-df7e-4eb6-947c-6881f38deec1.cast"></div>
 <script>
-AsciinemaPlayer.create('./assets/casts/ab0c58d0-165a-475c-a676-30f46a2a918a.cast', document.getElementById('ab0c58d0-165a-475c-a676-30f46a2a918a.cast'), { autoPlay: true, fit: false, startAt: 0.4});
+AsciinemaPlayer.create('./assets/casts/6cd5adc3-df7e-4eb6-947c-6881f38deec1.cast', document.getElementById('6cd5adc3-df7e-4eb6-947c-6881f38deec1.cast'), { autoPlay: true, fit: false, startAt: 0.4});
 </script>
 <p>Then we move to a REPL block:</p><pre><code class="language-markdown hljs">```@repl 1
 @show y
@@ -55,16 +55,16 @@ z = y^2
 1
 2
 3
-```</code></pre><div id="b6923c44-7c98-451c-84f6-1137b5427dfb.cast"></div>
+```</code></pre><div id="bacf30fd-8897-4139-8add-b6918f5912ed.cast"></div>
 <script>
-AsciinemaPlayer.create('./assets/casts/b6923c44-7c98-451c-84f6-1137b5427dfb.cast', document.getElementById('b6923c44-7c98-451c-84f6-1137b5427dfb.cast'), { autoPlay: true, fit: false, startAt: 0.0});
+AsciinemaPlayer.create('./assets/casts/bacf30fd-8897-4139-8add-b6918f5912ed.cast', document.getElementById('bacf30fd-8897-4139-8add-b6918f5912ed.cast'), { autoPlay: true, fit: false, startAt: 0.0});
 </script>
 <p>Delay of 1:</p><pre><code class="language-markdown hljs">```@cast; delay=1, hide_inputs=true
 1
 2
 3
-```</code></pre><div id="d8cc0517-c9ae-44f1-adbe-229ba10cae92.cast"></div>
+```</code></pre><div id="47a626c5-a22d-4f3c-8a84-3f1bde3d9e5d.cast"></div>
 <script>
-AsciinemaPlayer.create('./assets/casts/d8cc0517-c9ae-44f1-adbe-229ba10cae92.cast', document.getElementById('d8cc0517-c9ae-44f1-adbe-229ba10cae92.cast'), { autoPlay: true, fit: false, startAt: 0.8});
+AsciinemaPlayer.create('./assets/casts/47a626c5-a22d-4f3c-8a84-3f1bde3d9e5d.cast', document.getElementById('47a626c5-a22d-4f3c-8a84-3f1bde3d9e5d.cast'), { autoPlay: true, fit: false, startAt: 0.8});
 </script>
-</article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Saturday 9 December 2023 20:41">Saturday 9 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Saturday 9 December 2023 20:42">Saturday 9 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
