@@ -16,7 +16,6 @@ end
         write_event!(cast, OutputEvent, "Let us wait...")
         sleep(0.5)
         write_event!(cast, OutputEvent, "\nDone!")
-        closewrite(io)
         seekstart(io)
         header, events = parse_cast(io)
 
@@ -45,7 +44,6 @@ end
             println("ok, done!")
         end
         @test ret isa Cast
-        closewrite(io)
         seekstart(io)
         header, events = parse_cast(io)
         test_default_header(header)
@@ -70,7 +68,6 @@ end
         println("ok, done!")
         """
         io = cast.write_handle
-        closewrite(io)
         seekstart(io)
         header, events = parse_cast(io)
         test_default_header(header)
