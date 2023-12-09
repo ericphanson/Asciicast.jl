@@ -1,8 +1,5 @@
 # Modified from:
-# <https://github.com/JuliaDocs/IOCapture.jl/blob/d8b27045cec8953e0e5a8d719ca1692b3a6d0d02/src/IOCapture.jl>
-using Logging
-import Random
-
+# <https://github.com/JuliaDocs/IOCapture.jl/blob/cea20507cff4e080a94a386c811e6d3d5945d327/src/IOCapture.jl>
 # pass a `cast` to write events to it "as they happen".
 # pass a `process` function to modify the event data before writing it.
 function capture(f, cast::Cast; rethrow::Type=Any, color::Bool=false, process=identity)
@@ -54,6 +51,7 @@ function capture(f, cast::Cast; rethrow::Type=Any, color::Bool=false, process=id
     # Success signals whether the function `f` did or did not throw an exception.
     result, success, backtrace = with_logger(logger) do
         try
+            yield() # avoid hang, see https://github.com/JuliaDocs/Documenter.jl/issues/2121
             f(), true, Vector{Ptr{Cvoid}}()
         catch err
             err isa rethrow && Base.rethrow(err)
