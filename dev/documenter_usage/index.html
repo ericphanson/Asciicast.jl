@@ -10,42 +10,60 @@ Pkg.status()
 using Pkg
 Pkg.status()
 1 + 1
-```</code></pre><p>and some raw HTML output:</p><pre><code class="language-html hljs">&lt;div id=&quot;dc05156e-99be-4621-80d5-cdd48b72f313.cast&quot;&gt;&lt;/div&gt;
+```</code></pre><p>and some raw HTML output:</p><pre><code class="language-html hljs">&lt;div id=&quot;d59ee38d-184a-4888-8749-41b4df76ae3b&quot;&gt;&lt;/div&gt;
 &lt;script&gt;
-AsciinemaPlayer.create(&#39;./assets/casts/dc05156e-99be-4621-80d5-cdd48b72f313.cast&#39;, document.getElementById(&#39;dc05156e-99be-4621-80d5-cdd48b72f313.cast&#39;), { autoPlay: true, fit: false, startAt: 0.4});
-&lt;/script&gt;</code></pre><p>Here, the name of the file is randomly generated with <code>uuid4()</code>, and the file itself is saved in the <code>assets</code> directory.</p><p>This looks like:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using Pkg</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Pkg.status()</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; 1 + 1</code><code class="nohighlight hljs ansi" style="display:block;">2</code></pre><div id="6113bd8d-e538-44c1-acc1-d97af69ffcc1.cast"></div>
+AsciinemaPlayer.create(
+&#39;data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6ODAsImhlaWdodCI6MTIsInRpbWVzdGFtcCI6MTcwMjE1ODMyMywiaWRsZV90aW1lX2xpbWl0IjoxLjAsImVudiI6eyJURVJNIjoieHRlcm0tMjU2Y29sb3IiLCJTSEVMTCI6Ii9iaW4venNoIn19ClswLjAwMTA5ODE1NTk3NTM0MTc5NjksImkiLCJ1c2luZyBQa2ciXQ0KWzAuNTAxMzQ1MTU3NjIzMjkxLCJvIiwianVsaWE+IHVzaW5nIFBrZ1xyXG4iXQ0KWzEuMDAyODIxMjA3MDQ2NTA4OCwibyIsIiJdDQpbMS41MDI5NzAyMTg2NTg0NDczLCJvIiwiXHJcbiJdDQpbMi4wMDI5NzQ5ODcwMzAwMjkzLCJpIiwiUGtnLnN0YXR1cygpIl0NClsyLjUwMjk3NjE3OTEyMjkyNSwibyIsImp1bGlhPiBQa2cuc3RhdHVzKClcclxuIl0NClszLjAxNTQ2MDAxNDM0MzI2MTcsIm8iLCJcdTAwMWJbMzJtXHUwMDFiWzFtU3RhdHVzXHUwMDFiWzIybVx1MDAxYlszOW0gIl0NClszLjUxNTUwNDEyMTc4MDM5NTUsIm8iLCJgfi9Bc2NpaWNhc3QuamwvZG9jcy9Qcm9qZWN0LnRvbWxgXHJcbiJdDQpbNC4wMTcxMTMyMDg3NzA3NTIsIm8iLCIgICJdDQpbNC41MTcxOTQwMzI2NjkwNjcsIm8iLCJcdTAwMWJbOTBtWzI2MDBkNDQ1XSBcdTAwMWJbMzltQXNjaWljYXN0IHYwLjEuMCBgLi5gIl0NCls1LjAxNzIzODE0MDEwNjIwMSwibyIsIlxyXG4gIl0NCls1LjUxNzI3NzAwMjMzNDU5NSwibyIsIiBcdTAwMWJbOTBtW2UzMDE3MmY1XSBcdTAwMWJbMzltIl0NCls2LjAxNzMxNTE0OTMwNzI1MSwibyIsIkRvY3VtZW50ZXIgdjEuMi4xXHJcbiJdDQpbNi41MTc3NzAwNTE5NTYxNzcsIm8iLCIiXQ0KWzcuMDE3OTI0MDcwMzU4Mjc2LCJvIiwiXHJcbiJdDQpbNy41MTc5MzIxNzY1ODk5NjYsImkiLCIxICsgMSJdDQpbOC4wMTc5MzMxMzAyNjQyODIsIm8iLCJqdWxpYT4gMSArIDFcclxuIl0NCls4LjUxODA5MzEwOTEzMDg2LCJvIiwiIl0NCls5LjAxODU5NDAyNjU2NTU1MiwibyIsIjJcclxuIl0NCg==&#39;,
+document.getElementById(&#39;d59ee38d-184a-4888-8749-41b4df76ae3b&#39;), { autoPlay: true, fit: false}
+);
+&lt;/script&gt;</code></pre><p>Here, the <code>id</code> is randomly generated with <code>uuid4()</code>, and the contents of the cast itself are base64-encoded and inlined into the HTML. Note: I initially tried saving these as separate files, but had trouble with casts not showing up on deployed pages, while inlining works reliably every time.</p><p>The output of this looks like:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using Pkg</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Pkg.status()</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; 1 + 1</code><code class="nohighlight hljs ansi" style="display:block;">2</code></pre><div id="465e65b1-29ad-447c-aa83-841c9fb1565d"></div>
 <script>
-AsciinemaPlayer.create('./assets/casts/6113bd8d-e538-44c1-acc1-d97af69ffcc1.cast', document.getElementById('6113bd8d-e538-44c1-acc1-d97af69ffcc1.cast'), { autoPlay: true, fit: false, startAt: 0.4});
+AsciinemaPlayer.create(
+'data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6ODAsImhlaWdodCI6MTIsInRpbWVzdGFtcCI6MTcwMjE1NTM5NSwiaWRsZV90aW1lX2xpbWl0IjoxLjAsImVudiI6eyJURVJNIjoieHRlcm0tMjU2Y29sb3IiLCJTSEVMTCI6Ii9iaW4vYmFzaCJ9fQpbMC41OTU4OTQwOTgyODE4NjA0LCJpIiwidXNpbmcgUGtnIl0NClsxLjE0NjQ0MDAyOTE0NDI4NywibyIsImp1bGlhPiB1c2luZyBQa2dcclxuIl0NClsxLjcxMDc1NDE1NjExMjY3MSwibyIsIiJdDQpbMi4yMTYzNzUxMTI1MzM1NjkzLCJvIiwiXHJcbiJdDQpbMi43MTY0MDMwMDc1MDczMjQsImkiLCJQa2cuc3RhdHVzKCkiXQ0KWzMuMjE2NDA3MDYwNjIzMTY5LCJvIiwianVsaWE+IFBrZy5zdGF0dXMoKVxyXG4iXQ0KWzUuMjY0ODA2OTg1ODU1MTAyNSwibyIsIlx1MDAxYlszMm1cdTAwMWJbMW1TdGF0dXNcdTAwMWJbMjJtXHUwMDFiWzM5bSAiXQ0KWzUuNzY0ODUzMDAwNjQwODY5LCJvIiwiYH4vd29yay9Bc2NpaWNhc3QuamwvQXNjaWljYXN0LmpsL2RvY3MvUHJvamVjdC50b21sYFxyXG4iXQ0KWzYuMjY3NjgxMTIxODI2MTcyLCJvIiwiICAiXQ0KWzYuNzY3NzI4MDkwMjg2MjU1LCJvIiwiXHUwMDFiWzkwbVsyNjAwZDQ0NV0gXHUwMDFiWzM5bUFzY2lpY2FzdCB2MC4xLjAgYH4vd29yay9Bc2NpaWNhc3QuamwvQXNjaWljYXN0LmpsYCJdDQpbNy4yNjc3NTQwNzc5MTEzNzcsIm8iLCJcclxuICJdDQpbNy43Njc3NzkxMTE4NjIxODMsIm8iLCIgXHUwMDFiWzkwbVtlMzAxNzJmNV0gXHUwMDFiWzM5bSJdDQpbOC4yNjc4MDEwNDYzNzE0NiwibyIsIkRvY3VtZW50ZXIgdjEuMi4xXHJcbiJdDQpbOC43NzIxNzkxMjY3Mzk1MDIsIm8iLCIiXQ0KWzkuMjcyNDc0MDUwNTIxODUsIm8iLCJcclxuIl0NCls5Ljc3MjQ5MDAyNDU2NjY1LCJpIiwiMSArIDEiXQ0KWzEwLjI3MjQ5MzEyNDAwODE3OSwibyIsImp1bGlhPiAxICsgMVxyXG4iXQ0KWzEwLjc3MjY4MDA0NDE3NDE5NCwibyIsIiJdDQpbMTEuMjgxNjgzMjA2NTU4MjI4LCJvIiwiMlxyXG4iXQ0K',
+document.getElementById('465e65b1-29ad-447c-aa83-841c9fb1565d'), { autoPlay: true, fit: false}
+);
 </script>
 <h2 id="Hiding-REPL-inputs"><a class="docs-heading-anchor" href="#Hiding-REPL-inputs">Hiding REPL inputs</a><a id="Hiding-REPL-inputs-1"></a><a class="docs-heading-anchor-permalink" href="#Hiding-REPL-inputs" title="Permalink"></a></h2><p>You can also use <code>hide_inputs=true</code> to hide the inputs, showing just the asciinema player. The syntax for that is:</p><pre><code class="language-markdown hljs">```@cast; hide_inputs=true
 using Pkg
 Pkg.status()
 1 + 1
-```</code></pre><p>This looks like:</p><div id="552edb65-8eeb-4d13-8cab-e0f25f691df0.cast"></div>
+```</code></pre><p>This looks like:</p><div id="15edc094-a48b-4b58-af69-2d3f1ceee269"></div>
 <script>
-AsciinemaPlayer.create('./assets/casts/552edb65-8eeb-4d13-8cab-e0f25f691df0.cast', document.getElementById('552edb65-8eeb-4d13-8cab-e0f25f691df0.cast'), { autoPlay: true, fit: false, startAt: 0.4});
+AsciinemaPlayer.create(
+'data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6ODAsImhlaWdodCI6MTIsInRpbWVzdGFtcCI6MTcwMjE1NTM5NywiaWRsZV90aW1lX2xpbWl0IjoxLjAsImVudiI6eyJURVJNIjoieHRlcm0tMjU2Y29sb3IiLCJTSEVMTCI6Ii9iaW4vYmFzaCJ9fQpbMC4wMDAzNzU5ODYwOTkyNDMxNjQwNiwiaSIsInVzaW5nIFBrZyJdDQpbMC41MDAzODI5MDAyMzgwMzcxLCJvIiwianVsaWE+IHVzaW5nIFBrZ1xyXG4iXQ0KWzEuMDAwNjU4OTg4OTUyNjM2NywibyIsIiJdDQpbMS41MDA4NzQwNDI1MTA5ODYzLCJvIiwiXHJcbiJdDQpbMi4wMDA4ODUwMDk3NjU2MjUsImkiLCJQa2cuc3RhdHVzKCkiXQ0KWzIuNTAwODg2OTE3MTE0MjU4LCJvIiwianVsaWE+IFBrZy5zdGF0dXMoKVxyXG4iXQ0KWzMuMDAyODc2MDQzMzE5NzAyLCJvIiwiXHUwMDFiWzMybVx1MDAxYlsxbVN0YXR1c1x1MDAxYlsyMm1cdTAwMWJbMzltICJdDQpbMy41MDI5MTM5NTE4NzM3NzkzLCJvIiwiYH4vd29yay9Bc2NpaWNhc3QuamwvQXNjaWljYXN0LmpsL2RvY3MvUHJvamVjdC50b21sYFxyXG4iXQ0KWzQuMDAzNDI4OTM2MDA0NjM5LCJvIiwiICAiXQ0KWzQuNTAzNDc4MDUwMjMxOTM0LCJvIiwiXHUwMDFiWzkwbVsyNjAwZDQ0NV0gXHUwMDFiWzM5bUFzY2lpY2FzdCB2MC4xLjAgYH4vd29yay9Bc2NpaWNhc3QuamwvQXNjaWljYXN0LmpsYCJdDQpbNS4wMDM1MDA5Mzg0MTU1MjcsIm8iLCJcclxuICJdDQpbNS41MDM1MjY5MjYwNDA2NDksIm8iLCIgXHUwMDFiWzkwbVtlMzAxNzJmNV0gXHUwMDFiWzM5bSJdDQpbNi4wMDM1NDkwOTg5Njg1MDYsIm8iLCJEb2N1bWVudGVyIHYxLjIuMVxyXG4iXQ0KWzYuNTAzNjAxMDc0MjE4NzUsIm8iLCIiXQ0KWzcuMDAzNzkzOTU0ODQ5MjQzLCJvIiwiXHJcbiJdDQpbNy41MDM4MDM5Njg0Mjk1NjUsImkiLCIxICsgMSJdDQpbOC4wMDM4MDU4NzU3NzgxOTgsIm8iLCJqdWxpYT4gMSArIDFcclxuIl0NCls4LjUwMzk3OTkyMTM0MDk0MiwibyIsIiJdDQpbOS4wMDQxNDIwNDU5NzQ3MzEsIm8iLCIyXHJcbiJdDQo=',
+document.getElementById('15edc094-a48b-4b58-af69-2d3f1ceee269'), { autoPlay: true, fit: false}
+);
 </script>
 <h2 id="Exceptions"><a class="docs-heading-anchor" href="#Exceptions">Exceptions</a><a id="Exceptions-1"></a><a class="docs-heading-anchor-permalink" href="#Exceptions" title="Permalink"></a></h2><p>Like in <code>@repl</code> blocks, exceptions are allowed. For example:</p><pre><code class="language-markdown hljs">```@cast
 error(&quot;This is an exception!&quot;)
-```</code></pre><p>This looks like:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; error(&quot;This is an exception!&quot;)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: This is an exception!</code></pre><div id="ea26381e-ec1a-43e7-a6da-598a5779f2b1.cast"></div>
+```</code></pre><p>This looks like:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; error(&quot;This is an exception!&quot;)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: This is an exception!</code></pre><div id="16177589-85cc-499b-9803-59d347cd8b90"></div>
 <script>
-AsciinemaPlayer.create('./assets/casts/ea26381e-ec1a-43e7-a6da-598a5779f2b1.cast', document.getElementById('ea26381e-ec1a-43e7-a6da-598a5779f2b1.cast'), { autoPlay: true, fit: false, startAt: 0.4});
+AsciinemaPlayer.create(
+'data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6ODAsImhlaWdodCI6OCwidGltZXN0YW1wIjoxNzAyMTU1Mzk3LCJpZGxlX3RpbWVfbGltaXQiOjEuMCwiZW52Ijp7IlRFUk0iOiJ4dGVybS0yNTZjb2xvciIsIlNIRUxMIjoiL2Jpbi9iYXNoIn19ClswLjAwMDIxOTgyMTkyOTkzMTY0MDYyLCJpIiwiZXJyb3IoXCJUaGlzIGlzIGFuIGV4Y2VwdGlvbiFcIikiXQ0KWzAuNTAwMjI0ODI4NzIwMDkyOCwibyIsImp1bGlhPiBlcnJvcihcIlRoaXMgaXMgYW4gZXhjZXB0aW9uIVwiKVxyXG4iXQ0KWzEuMDAwNTUwOTg1MzM2MzAzNywibyIsIiJdDQpbMi4xMDM1MDI5ODg4MTUzMDc2LCJvIiwiRVJST1I6IFRoaXMgaXMgYW4gZXhjZXB0aW9uIVxyXG4iXQ0K',
+document.getElementById('16177589-85cc-499b-9803-59d347cd8b90'), { autoPlay: true, fit: false}
+);
 </script>
 <p>To prevent exceptions, use <code>allow_errors=false</code>, as in</p><pre><code class="language-markdown hljs">```@cast; allow_errors=false
 error(&quot;This is an exception!&quot;)
 ```</code></pre><h2 id="Example-with-a-named-block"><a class="docs-heading-anchor" href="#Example-with-a-named-block">Example with a named block</a><a id="Example-with-a-named-block-1"></a><a class="docs-heading-anchor-permalink" href="#Example-with-a-named-block" title="Permalink"></a></h2><p>First block:</p><pre><code class="language-markdown hljs">```@cast 1; hide_inputs=true
 x = -1
 x*x
-```</code></pre><div id="ce8290b9-f9f4-4ca2-8d17-6496ffc41587.cast"></div>
+```</code></pre><div id="43b5c4f3-426a-45f5-90bf-d1e17cd5430f"></div>
 <script>
-AsciinemaPlayer.create('./assets/casts/ce8290b9-f9f4-4ca2-8d17-6496ffc41587.cast', document.getElementById('ce8290b9-f9f4-4ca2-8d17-6496ffc41587.cast'), { autoPlay: true, fit: false, startAt: 0.4});
+AsciinemaPlayer.create(
+'data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6ODAsImhlaWdodCI6OCwidGltZXN0YW1wIjoxNzAyMTU1Mzk4LCJpZGxlX3RpbWVfbGltaXQiOjEuMCwiZW52Ijp7IlRFUk0iOiJ4dGVybS0yNTZjb2xvciIsIlNIRUxMIjoiL2Jpbi9iYXNoIn19ClswLjAwMDI3Nzk5NjA2MzIzMjQyMTksImkiLCJ4ID0gLTEiXQ0KWzAuNTAwMjgzMDAyODUzMzkzNiwibyIsImp1bGlhPiB4ID0gLTFcclxuIl0NClsxLjAwMDU1Njk0NTgwMDc4MTIsIm8iLCIiXQ0KWzEuNTAwNzI1MDMwODk5MDQ3OSwibyIsIi0xXHJcblxyXG4iXQ0KWzIuMDAwNzMzMTM3MTMwNzM3MywiaSIsIngqeCJdDQpbMi41MDA3MzUwNDQ0NzkzNywibyIsImp1bGlhPiB4KnhcclxuIl0NClszLjAwMDg5NTk3NzAyMDI2MzcsIm8iLCIiXQ0KWzMuNTAxMDQ4MDg4MDczNzMwNSwibyIsIjFcclxuIl0NCg==',
+document.getElementById('43b5c4f3-426a-45f5-90bf-d1e17cd5430f'), { autoPlay: true, fit: false}
+);
 </script>
 <p>The next block continues:</p><pre><code class="language-markdown hljs">```@cast 1; hide_inputs=true
 y = x+1
 sqrt(x)
-```</code></pre><div id="6cd5adc3-df7e-4eb6-947c-6881f38deec1.cast"></div>
+```</code></pre><div id="c1abb83a-7442-4370-8c06-8f1eb16ca8cf"></div>
 <script>
-AsciinemaPlayer.create('./assets/casts/6cd5adc3-df7e-4eb6-947c-6881f38deec1.cast', document.getElementById('6cd5adc3-df7e-4eb6-947c-6881f38deec1.cast'), { autoPlay: true, fit: false, startAt: 0.4});
+AsciinemaPlayer.create(
+'data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6ODAsImhlaWdodCI6OCwidGltZXN0YW1wIjoxNzAyMTU1Mzk4LCJpZGxlX3RpbWVfbGltaXQiOjEuMCwiZW52Ijp7IlRFUk0iOiJ4dGVybS0yNTZjb2xvciIsIlNIRUxMIjoiL2Jpbi9iYXNoIn19ClswLjAwMDIxOTgyMTkyOTkzMTY0MDYyLCJpIiwieSA9IHgrMSJdDQpbMC41MDAyMjI5MjEzNzE0NiwibyIsImp1bGlhPiB5ID0geCsxXHJcbiJdDQpbMS4wMDA0NDQ4ODkwNjg2MDM1LCJvIiwiIl0NClsxLjUwMDY0MzAxNDkwNzgzNywibyIsIjBcclxuXHJcbiJdDQpbMi4wMDA2NTA4ODI3MjA5NDczLCJpIiwic3FydCh4KSJdDQpbMi41MDA2NTMwMjg0ODgxNTksIm8iLCJqdWxpYT4gc3FydCh4KVxyXG4iXQ0KWzMuMDA5NzMwODE1ODg3NDUxLCJvIiwiIl0NClszLjU5NzMzODkxNDg3MTIxNiwibyIsIkVSUk9SOiBEb21haW5FcnJvciB3aXRoIC0xLjA6XHJcbnNxcnQgd2lsbCBvbmx5IHJldHVybiBhIGNvbXBsZXggcmVzdWx0IGlmIGNhbGxlZCB3aXRoIGEgY29tcGxleCBhcmd1bWVudC4gVHJ5IHNxcnQoQ29tcGxleCh4KSkuXHJcbiJdDQo=',
+document.getElementById('c1abb83a-7442-4370-8c06-8f1eb16ca8cf'), { autoPlay: true, fit: false}
+);
 </script>
 <p>Then we move to a REPL block:</p><pre><code class="language-markdown hljs">```@repl 1
 @show y
@@ -55,16 +73,22 @@ z = y^2
 1
 2
 3
-```</code></pre><div id="bacf30fd-8897-4139-8add-b6918f5912ed.cast"></div>
+```</code></pre><div id="45704648-a2dc-45e0-9753-059251f60f83"></div>
 <script>
-AsciinemaPlayer.create('./assets/casts/bacf30fd-8897-4139-8add-b6918f5912ed.cast', document.getElementById('bacf30fd-8897-4139-8add-b6918f5912ed.cast'), { autoPlay: true, fit: false, startAt: 0.0});
+AsciinemaPlayer.create(
+'data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6ODAsImhlaWdodCI6NiwidGltZXN0YW1wIjoxNzAyMTU1Mzk4LCJpZGxlX3RpbWVfbGltaXQiOjEuMCwiZW52Ijp7IlRFUk0iOiJ4dGVybS0yNTZjb2xvciIsIlNIRUxMIjoiL2Jpbi9iYXNoIn19ClswLjAwMDMxMzA0MzU5NDM2MDM1MTU2LCJpIiwiMSJdDQpbMC4wMDAzMTkwMDQwNTg4Mzc4OTA2LCJvIiwianVsaWE+IDFcclxuIl0NClswLjAwMDQwNDExOTQ5MTU3NzE0ODQ0LCJvIiwiIl0NClswLjAwMDU2OTEwNTE0ODMxNTQyOTcsIm8iLCIxXHJcblxyXG4iXQ0KWzAuMDAwNTc2MDE5Mjg3MTA5Mzc1LCJpIiwiMiJdDQpbMC4wMDA1NzgxNjUwNTQzMjEyODkxLCJvIiwianVsaWE+IDJcclxuIl0NClswLjAwMDYzODAwODExNzY3NTc4MTIsIm8iLCIiXQ0KWzAuMDAwNzkyOTgwMTk0MDkxNzk2OSwibyIsIjJcclxuXHJcbiJdDQpbMC4wMDA3OTg5NDA2NTg1NjkzMzU5LCJpIiwiMyJdDQpbMC4wMDA4MDEwODY0MjU3ODEyNSwibyIsImp1bGlhPiAzXHJcbiJdDQpbMC4wMDA4NTcxMTQ3OTE4NzAxMTcyLCJvIiwiIl0NClswLjAwMTAwNjEyNjQwMzgwODU5MzgsIm8iLCIzXHJcbiJdDQo=',
+document.getElementById('45704648-a2dc-45e0-9753-059251f60f83'), { autoPlay: true, fit: false}
+);
 </script>
 <p>Delay of 1:</p><pre><code class="language-markdown hljs">```@cast; delay=1, hide_inputs=true
 1
 2
 3
-```</code></pre><div id="47a626c5-a22d-4f3c-8a84-3f1bde3d9e5d.cast"></div>
+```</code></pre><div id="fadd7eb6-12eb-45d9-8219-fc856e255a03"></div>
 <script>
-AsciinemaPlayer.create('./assets/casts/47a626c5-a22d-4f3c-8a84-3f1bde3d9e5d.cast', document.getElementById('47a626c5-a22d-4f3c-8a84-3f1bde3d9e5d.cast'), { autoPlay: true, fit: false, startAt: 0.8});
+AsciinemaPlayer.create(
+'data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6ODAsImhlaWdodCI6NiwidGltZXN0YW1wIjoxNzAyMTU1Mzk4LCJpZGxlX3RpbWVfbGltaXQiOjEuMCwiZW52Ijp7IlRFUk0iOiJ4dGVybS0yNTZjb2xvciIsIlNIRUxMIjoiL2Jpbi9iYXNoIn19ClswLjAwMDE3NjkwNjU4NTY5MzM1OTM4LCJpIiwiMSJdDQpbMS4wMDAxODAwMDYwMjcyMjE3LCJvIiwianVsaWE+IDFcclxuIl0NClsyLjAwMDI0ODkwODk5NjU4MiwibyIsIiJdDQpbMy4wMDA0MDM4ODEwNzI5OTgsIm8iLCIxXHJcblxyXG4iXQ0KWzQuMDAwNDExMDMzNjMwMzcxLCJpIiwiMiJdDQpbNS4wMDA0MTI5NDA5NzkwMDQsIm8iLCJqdWxpYT4gMlxyXG4iXQ0KWzYuMDAwNDY5OTIzMDE5NDA5LCJvIiwiIl0NCls3LjAwMDYxOTg4ODMwNTY2NCwibyIsIjJcclxuXHJcbiJdDQpbOC4wMDA2MjU4NDg3NzAxNDIsImkiLCIzIl0NCls5LjAwMDYyNzk5NDUzNzM1NCwibyIsImp1bGlhPiAzXHJcbiJdDQpbMTAuMDAwNjgzMDY5MjI5MTI2LCJvIiwiIl0NClsxMS4wMDA4MzA4ODg3NDgxNjksIm8iLCIzXHJcbiJdDQo=',
+document.getElementById('fadd7eb6-12eb-45d9-8219-fc856e255a03'), { autoPlay: true, fit: false}
+);
 </script>
-</article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Saturday 9 December 2023 20:42">Saturday 9 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Home</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Saturday 9 December 2023 20:56">Saturday 9 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
