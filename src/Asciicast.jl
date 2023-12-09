@@ -160,7 +160,7 @@ struct Event
     type::EventType
     event_data::String
 end
-function Event(t::Float64, type::AbstractString, event_data::AbstractString)
+function Event(t::Number, type::AbstractString, event_data::AbstractString)
     event_type = if type == "i"
         InputEvent
     elseif type == "o"
