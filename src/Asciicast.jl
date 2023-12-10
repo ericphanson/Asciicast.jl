@@ -89,20 +89,22 @@ struct Cast{T<:Union{IO, AbstractString}}
     start_time::Float64
     events_written::Base.RefValue{Int}
     delay::Float64
+    loop::Union{Bool, Int}
 end
 
 """
-    Cast(file_or_io=IOBuffer(), header=Header(), start_time=time(); delay=0.0)
+    Cast(file_or_io=IOBuffer(), header=Header(), start_time=time(); delay=0.0, loop=false)
 
 Create a `Cast` object which represents an `asciicast` file
 (see <https://github.com/asciinema/asciinema/blob/asciicast-v2/doc/asciicast-v2.md>
 for the format).
 
-Set `delay` to enforce a constant delay between events.
+* Set `delay` to enforce a constant delay between events.
+* Set `loop` to `true` to loop continuously, or to an integer to loop a specified number of times. Only supported in the HTML `show` method for asciinema-player (not in the written file format, nor gif support, which currently always loops).
 
 Use [`write_event!`](@ref) to write an event to the cast.
 """
-function Cast(write_handle::Union{IO, AbstractString}=IOBuffer(), header::Header=Header(), start_time::Float64=time(); delay=0.0)
+function Cast(write_handle::Union{IO, AbstractString}=IOBuffer(), header::Header=Header(), start_time::Float64=time(); delay=0.0, loop=false)
     if write_handle isa AbstractString
         mkpath(dirname(write_handle))
     end
@@ -110,7 +112,7 @@ function Cast(write_handle::Union{IO, AbstractString}=IOBuffer(), header::Header
         JSON3.write(io, header)
         println(io)
     end
-    return Cast{typeof(write_handle)}(write_handle, header, start_time, Ref(0), delay)
+    return Cast{typeof(write_handle)}(write_handle, header, start_time, Ref(0), delay, loop)
 end
 
 collect_bytes(cast::Cast) = collect_bytes(cast.write_handle)
@@ -123,7 +125,7 @@ function Base.show(io::IO, mime::MIME"text/html", cast::Cast)
     <script>
     AsciinemaPlayer.create(
     'data:text/plain;base64,$(base64_str)',
-    document.getElementById('$(name)'), { autoPlay: true, fit: false}
+    document.getElementById('$(name)'), {autoPlay: true, fit: false, loop: $(cast.loop)}
     );
     </script>
     """)

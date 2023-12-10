@@ -180,6 +180,13 @@ Delay of 1:
 3
 ```
 
+### All supported options in `@cast` Documenter blocks
+
+* `hide_inputs::Bool=false`. Whether or not to hide the `@repl`-style inputs before the animated gif.
+* `allow_errors::Bool=true`. Whether or not the Documenter build should fail if exceptions are encountered during execution of the `@cast` block.
+* `delay::Float64=0.25`. The amount of delay between line executions (to emulate typing time).
+* `loop::Union{Int,Bool}=false`. Set to `true` for infinite looping, or an integer to loop a fixed number of times.
+* `height::Int`. Heuristically determined by default. Set to an integer to specify the number of lines.
 
 ### Reference docs
 
