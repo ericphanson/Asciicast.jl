@@ -1,4 +1,3 @@
-
 abstract type CastBlocks <: ExpanderPipeline end
 
 Selectors.order(::Type{CastBlocks}) = 9.1 # just after REPL blocks

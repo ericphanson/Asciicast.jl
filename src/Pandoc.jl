@@ -1,4 +1,3 @@
-
 module Pandoc
 
 function filter(doc, actions)
@@ -97,7 +96,6 @@ const Div = elt("Div", 2)
 const Null = elt("Null", 0)
 
 # Constructors for inline elements
-
 const Str = elt("Str", 1)
 const Emph = elt("Emph", 1)
 const Strong = elt("Strong", 1)

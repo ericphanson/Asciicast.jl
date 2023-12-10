@@ -12,6 +12,7 @@ using MarkdownAST
 using pandoc_jll
 
 export Cast, OutputEvent, InputEvent, write_event!, record_output
+export cast_document, cast_readme
 export @cast_str
 
 const Object = Dict{String, String}

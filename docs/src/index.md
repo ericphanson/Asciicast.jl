@@ -1,6 +1,11 @@
 # Asciicast.jl
 
-## Simple example
+```@contents
+Depth = 5
+Pages = ["index.md", "documenter_usage.md", "markdown_usage.md"]
+```
+
+## Quick example
 
 The string macro [`@cast_str`](@ref) provides a convenient API to construct a [`Cast`](@ref) object:
 
@@ -13,7 +18,9 @@ cast"""
     """0.5
 ```
 
-The `Cast` objects have a `show` method defined for HTML, allowing rich display with a local [asciinema player](https://github.com/asciinema/asciinema-player), in Documenter, Pluto, jupyter, etc. For convenient use with Documenter in particular, see the `@cast` syntax in [Documenter usage](@ref).
+The `Cast` objects have a `show` method defined for HTML, allowing rich display with a local [asciinema-player](https://github.com/asciinema/asciinema-player), in Documenter, Pluto, jupyter, etc. For convenient use with Documenter in particular, see the `@cast` syntax in [Documenter usage](@ref). Note that this player needs the asciinema-player javascript and CSS assets to be loaded.
+
+They can be saved to a `.cast` file using [`Asciicast.save`](@ref) or saved to a gif using [`Asciicast.save_gif`](@ref). See also [Markdown usage](@ref) for easier integration into READMEs and other documents.
 
 ## `record_output` example
 
@@ -55,6 +62,7 @@ Such a `Cast` can be saved to a `.cast` file using [`Asciicast.save`](@ref). The
 ## API Reference
 
 ```@index
+Pages = ["index.md", "documenter_usage.md", "markdown_usage.md"]
 ```
 
 ```@autodocs

@@ -1,20 +1,31 @@
-
 """
-    save_code_gif(output_path, code_string)
+    save_code_gif(output_path, code_string; delay=0.25)
 
 Given Julia source code as a string, run the code in a REPL mode and save the results as a gif to `output_path`.
 """
-function save_code_gif(output_path, code_string)
-    cast = _cast_str(code_string)
+function save_code_gif(output_path, code_string; delay=0.25)
+    cast = _cast_str(code_string, delay)
+    save_gif(output_path, cast::Cast)
+    return output_path
+end
+
+"""
+    save_gif(output_path, cast::Cast)
+
+Saves the [`Cast`](@ref) to `output_path` as a gif (using [`agg`](https://github.com/asciinema/agg)).
+"""
+function save_gif(output_path, cast::Cast)
     mktempdir() do tmp
         input_path = joinpath(tmp, "input.cast")
         save(input_path, cast)
+        # Larger font size to reduce blurriness:
+        # https://github.com/asciinema/agg/issues/60#issuecomment-1807910643
         run(pipeline(`agg --font-size 28 $input_path $output_path`; stdout=devnull, stderr=devnull))
     end
     return output_path
 end
 
-# Add gifs with the contents of `julia:@cast` code blocks.
+# Pandoc filter to add gifs with the contents of `julia:@cast` code blocks.
 function cast_action(tag, content, format, meta; base_dir, counter)
     tag == "CodeBlock" || return nothing
     content[1][2][1] == "julia:@cast" || return nothing
@@ -30,7 +41,7 @@ function cast_action(tag, content, format, meta; base_dir, counter)
     ]
 end
 
-# Remove gifs that contain `@cast` in their path
+# Pandoc filter to remove gifs that contain `@cast` in their path
 function rm_old_gif(tag, content, format, meta)
     tag == "Image" || return nothing
     path = content[3][1]
@@ -41,11 +52,13 @@ end
 
 """
     cast_readme(MyPackage::Module)
+    cast_readme(MyPackage::Module, output_path)
 
 Add gifs for each `julia:@cast` code-block in the README of MyPackage. This is just a smaller helper that calls [`cast_document`](@ref) on `joinpath(pkgdir(MyPackage), "README.md")`.
-See [`cast_document`](@ref) for more options.
+See [`cast_document`](@ref) for more options and warnings.
 """
 cast_readme(mod::Module) = cast_document(joinpath(pkgdir(mod), "README.md"))
+cast_readme(mod::Module, output_path) = cast_document(joinpath(pkgdir(mod), "README.md"), output_path)
 
 """
     cast_document(input_path, output_path=input_path; format="gfm")

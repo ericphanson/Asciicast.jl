@@ -82,5 +82,17 @@ end
     end
 end
 
-# Finally, test the docs build:
+# Test that the docs build:
 include(joinpath(pkgdir(Asciicast), "docs", "_make.jl"))
+
+# Test that the README functionality works, and the README is up-to-date:
+# (once `agg` is JLL'd we can run this in CI)
+#=
+tmp = mktempdir()
+output = joinpath(tmp, "output.md")
+Asciicast.cast_readme(Asciicast, output)
+existing_readme = read(joinpath(pkgdir(Asciicast), "README.md"), String)
+updated_readme = read(output, String)
+# If this fails, you can just update the README with `Asciicast.cast_readme(Asciicast)`.
+@test existing_readme == updated_readme
+=#
