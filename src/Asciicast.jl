@@ -9,6 +9,7 @@ using Documenter: Expanders, Selectors, iscode, _any_color_fmt, droplines, prepe
 using Documenter.Expanders: ExpanderPipeline
 using UUIDs
 using MarkdownAST
+using pandoc_jll
 
 export Cast, OutputEvent, InputEvent, write_event!, record_output
 export @cast_str
@@ -154,7 +155,10 @@ end
 
 include("capture.jl")
 include("runner.jl")
+include("Pandoc.jl")
+using .Pandoc
 include("gif.jl")
+
 
 """
     record_output(f, filepath::AbstractString, start_time::Float64=time(); delay=0, kw...) -> filepath

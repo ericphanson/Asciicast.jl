@@ -17,7 +17,7 @@ The `Cast` objects have a `show` method defined for HTML, allowing rich display 
 
 ## `record_output` example
 
-Here only the *outputs* can be captured, as `record_output` is a function, not a macro.
+Here only the *outputs* can be captured, as [`record_output`](@ref) is a function, not a macro.
 
 ```@example
 using Asciicast
@@ -32,6 +32,8 @@ record_output(; height=10) do
     println("ok, done!")
 end
 ```
+
+This likewise produces a `Cast` object. You can provide a filename to have it save the results directly to that file.
 
 ## `Cast` objects and a manual example
 

@@ -98,15 +98,9 @@ asciinema-player to play the resulting cast.
 This feature requires the necessary JS and CSS files are added to
 `assets` in `makedocs`. See [docs/make.jl](docs/make.jl) for an example.
 
-``` julia-gif
-@info "Hello!"
-println("That was a logging statement, but this is printing.")
-x = 1
-x + 1
-@info "here's `x`" x
-println("Now I'll wait a second")
-sleep(1)
-println("ok, done!")
+``` julia:@cast
+using Pkg
+Pkg.status()
 ```
 
-![](output.gif)
+![](assets/output_1_@cast.gif)

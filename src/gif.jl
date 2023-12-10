@@ -1,144 +1,80 @@
 
-function gif(code_string)
+"""
+    save_code_gif(output_path, code_string)
+
+Given Julia source code as a string, run the code in a REPL mode and save the results as a gif to `output_path`.
+"""
+function save_code_gif(output_path, code_string)
     cast = _cast_str(code_string)
-    save("input.cast", cast)
-    run(pipeline(`agg --font-size 28 input.cast output.gif`; stdout=devnull, stderr=devnull))
-    return "output.gif"
+    mktempdir() do tmp
+        input_path = joinpath(tmp, "input.cast")
+        save(input_path, cast)
+        run(pipeline(`agg --font-size 28 $input_path $output_path`; stdout=devnull, stderr=devnull))
+    end
+    return output_path
 end
 
-
-"""
-Function walk! will walk! `Pandoc` document abstract source tree (AST) and apply filter function on each element of the document AST.
-Returns a modified tree.
-
-  action must be a function which takes four arguments, `tag, content, format, meta`,
-  and should return
-
-  * `nothing` to leave the element unchanged
-  * `[]` to delete the element
-  * A Pandoc element to replace the element
-  * or a list of Pandoc elements which will be spliced into the list the original object belongs to.
-"""
-
-function walk!(x :: Any, action :: Function, format, meta)
-    return x
-end
-
-function walk!(x :: AbstractArray, action :: Function, format, meta)
-  array = []
-  w!(z) = walk!(z, action, format, meta)
-  for item in x
-    if (item isa AbstractDict) && haskey(item,"t")
-      res = action(item["t"], get(item, "c", nothing), format, meta)
-      if res === nothing
-        push!(array, w!(item))
-      elseif res isa AbstractArray
-        for z in res
-          push!(array, w!(z))
-        end
-      else
-        push!(array, w!(res))
-      end
-    else
-      push!(array, w!(item))
-    end #if
-  end #for
-  return array
-end
-
-function walk!(dict :: AbstractDict, action :: Function, format, meta)
-  # Python version (mutating):
-  for k in keys(dict)
-    dict[k] = walk!(dict[k], action, format, meta)
-  end
-  return dict
-  # Dict(key => walk!(value,action, format, meta) for (key,value) in dict)
-end
-
-
-function elt(eltType, numargs)
-    function fun(args...)
-        lenargs = length(args)
-        if lenargs != numargs
-            throw(ArgumentError("$eltType expects $numargs arguments, but given $lenargs"))
-        end
-        if numargs == 0
-            return Dict("t" => eltType)
-        elseif numargs == 1
-            xs = args[1]
-        else
-            xs = collect(args)
-        end
-        return Dict("t" => eltType, "c" => xs)
-      end
-    return fun
-end
-# Constructors for block elements
-
-
-const Plain = elt("Plain", 1)
-const Para = elt("Para", 1)
-const CodeBlock = elt("CodeBlock", 2)
-const RawBlock = elt("RawBlock", 2)
-const BlockQuote = elt("BlockQuote", 1)
-const OrderedList = elt("OrderedList", 2)
-const BulletList = elt("BulletList", 1)
-const DefinitionList = elt("DefinitionList", 1)
-# const Header = elt("Header", 3)
-const HorizontalRule = elt("HorizontalRule", 0)
-const Table = elt("Table", 5)
-const Div = elt("Div", 2)
-const Null = elt("Null", 0)
-
-# Constructors for inline elements
-
-const Str = elt("Str", 1)
-const Emph = elt("Emph", 1)
-const Strong = elt("Strong", 1)
-const Strikeout = elt("Strikeout", 1)
-const Superscript = elt("Superscript", 1)
-const Subscript = elt("Subscript", 1)
-const SmallCaps = elt("SmallCaps", 1)
-const Quoted = elt("Quoted", 2)
-const Cite = elt("Cite", 2)
-const Code = elt("Code", 2)
-const Space = elt("Space", 0)
-const LineBreak = elt("LineBreak", 0)
-const Math = elt("Math", 2)
-const RawInline = elt("RawInline", 2)
-const Link = elt("Link", 3)
-const Image = elt("Image", 3)
-const Note = elt("Note", 1)
-const SoftBreak = elt("SoftBreak", 0)
-const Span = elt("Span", 2)
-
-
-function show_action(tag, content, format, meta)
+# Add gifs with the contents of `julia:@cast` code blocks.
+function cast_action(tag, content, format, meta; base_dir, counter)
     tag == "CodeBlock" || return nothing
-
-    content[1][2][1] == "julia-gif" || return nothing
-
+    content[1][2][1] == "julia:@cast" || return nothing
     block = content[2]
-    img_path = gif(block)
-
+    c = counter[]
+    counter[] += 1
+    name = "output_$(c)_@cast.gif"
+    rel_path = joinpath("assets", name)
+    save_code_gif(joinpath(base_dir, rel_path), block)
     return [
-        CodeBlock(content...)
-        Para([Image(["", [], []], [], [img_path, ""])])
-        ]
+        Pandoc.CodeBlock(content...)
+        Pandoc.Para([Pandoc.Image(["", [], []], [], [rel_path, ""])])
+    ]
 end
 
-function xyz()
-    doc = JSON3.read(stdin, Dict)
-    format = (length(ARGS) <= 0) ? "" : ARGS[1]
-    if "meta" in keys(doc)
-        meta = doc["meta"]
-    elseif doc isa AbstractArray  # old API
-        meta = doc[1]["test"]
-    else
-        meta = Dict()
+# Remove gifs that contain `@cast` in their path
+function rm_old_gif(tag, content, format, meta)
+    tag == "Image" || return nothing
+    path = content[3][1]
+    contains(path, "@cast") || return nothing
+    endswith(path, ".gif") || return nothing
+    return []
+end
+
+"""
+    cast_readme(MyPackage::Module)
+
+Add gifs for each `julia:@cast` code-block in the README of MyPackage. This is just a smaller helper that calls [`cast_document`](@ref) on `joinpath(pkgdir(MyPackage), "README.md")`.
+See [`cast_document`](@ref) for more options.
+"""
+cast_readme(mod::Module) = cast_document(joinpath(pkgdir(mod), "README.md"))
+
+"""
+    cast_document(input_path, output_path=input_path; format="gfm")
+
+For each `julia:@cast` code-block in the input document, generates a gif
+executing that code in a REPL, saves it to `joinpath(dirname(output_path), "assets")`
+and inserts it as an image following the code-block, writing the resulting document
+to `output_path`.
+
+The default `format` is Github-flavored markdown. Specify the `format` keyword argument to choose an alternate pandoc-supported format (see <https://pandoc.org/MANUAL.html#general-options>). This has only been tested with Github-flavored markdown, but theoretically should work with any pandoc format.
+
+Returns the number of gifs generated.
+
+!!! warning
+    This function relies on parsing the document using pandoc and roundtripping through the pandoc AST. This can result in unexpected modifications to the document.
+
+    It is recommended to check your document into source control before running this function,
+    or specifying an `output_path` that is different from the input path, in order to assess
+    the results.
+"""
+function cast_document(input_path, output_path=input_path; format="gfm")
+    json = JSON3.read(read(`$(pandoc()) -f $format -t json $input_path`), Dict)
+    base_dir = dirname(output_path)
+    mkpath(joinpath(base_dir, "assets"))
+    counter = Ref{Int}(1)
+    act = (args...) -> cast_action(args...; base_dir, counter)
+    output = JSON3.write(Pandoc.filter(json, [rm_old_gif, act]))
+    open(`$(pandoc()) -f json -t $format --resource-path=$(base_dir) -o $output_path`; write=true) do io
+        write(io, output)
     end
-    for action in [show_action]
-        doc = walk!(doc, action, format, meta)
-    end
-    JSON3.write(stdout, doc)
+    return counter[]
 end
