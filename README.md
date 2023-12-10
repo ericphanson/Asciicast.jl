@@ -1,6 +1,6 @@
 # Asciicast
 
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://ericphanson.github.io/Asciicast.jl/dev)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://ericphanson.github.io/Asciicast.jl/dev)[![codecov](https://codecov.io/gh/ericphanson/Asciicast.jl/graph/badge.svg?token=0ZK1A45AQ0)](https://codecov.io/gh/ericphanson/Asciicast.jl)
 
 Asciicast.jl is all about showcasing Julia code running in a REPL using
 technologies developed by the open-source
