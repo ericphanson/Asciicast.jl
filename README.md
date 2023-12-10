@@ -36,7 +36,6 @@ println("That was a logging statement, but this is printing.")
 x = rand(10, 10)
 using LinearAlgebra
 svd(x)
-@info "here's `x`" x
 println("Now I'll wait a second")
 sleep(1)
 println("ok, done!")
