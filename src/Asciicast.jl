@@ -9,8 +9,10 @@ using Documenter: Expanders, Selectors, iscode, _any_color_fmt, droplines, prepe
 using Documenter.Expanders: ExpanderPipeline
 using UUIDs
 using MarkdownAST
+using pandoc_jll, agg_jll
 
 export Cast, OutputEvent, InputEvent, write_event!, record_output
+export cast_document, cast_readme
 export @cast_str
 
 const Object = Dict{String, String}
@@ -154,6 +156,10 @@ end
 
 include("capture.jl")
 include("runner.jl")
+include("Pandoc.jl")
+using .Pandoc
+include("gif.jl")
+
 
 """
     record_output(f, filepath::AbstractString, start_time::Float64=time(); delay=0, kw...) -> filepath
@@ -230,5 +236,6 @@ function assets(asciinema_version = "3.6.3")
     return [Documenter.asset(asciinema_js_url; class=:js),
             Documenter.asset(asciinema_css_url; class=:css)]
 end
+
 
 end # module

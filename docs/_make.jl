@@ -19,6 +19,10 @@ makedocs(;
     ),
     pages=[
         "Home" => "index.md",
+        "Creating casts" => "creating_casts.md",
         "Documenter usage" => "documenter_usage.md",
+        "Markdown usage" => "markdown_usage.md",
+        "Cast files" => "cast_files.md",
+        hide("Pandoc" => "Pandoc.md"),
     ],
 )

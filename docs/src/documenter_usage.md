@@ -1,4 +1,4 @@
-# Documenter usage
+## Documenter usage
 
 To use Asciicast with documenter, the [asciinema-player](https://github.com/asciinema/asciinema-player) javascript and CSS assets must be provided to Documenter in `makedocs` in your `docs/make.jl` file.
 
@@ -7,11 +7,16 @@ This can be done using the [`Asciicast.assets`](@ref) function, e.g.
 ```julia
 makedocs(;
     # ...
-    assets = Asciicast.assets()
+    format=Documenter.HTML(;
+        assets=Asciicast.assets(),
+        # ...
+    ),
 )
 ```
 
-## `@cast` blocks
+Besides that, the only other requirement is to load `Asciicast` in your `make.jl` (`using Asciicast`).
+
+### `@cast` blocks
 
 Asciicast.jl works as a Documenter plugin, providing `@cast` blocks which work similarly to `@repl` blocks. For example:
 
@@ -53,7 +58,7 @@ Pkg.status()
 1 + 1
 ```
 
-## Hiding REPL inputs
+### Hiding REPL inputs
 
 You can also use `hide_inputs=true` to hide the inputs, showing just the asciinema player. The syntax for that is:
 
@@ -73,7 +78,7 @@ Pkg.status()
 1 + 1
 ```
 
-## Exceptions
+### Exceptions
 
 Like in `@repl` blocks, exceptions are allowed. For example:
 
@@ -97,7 +102,7 @@ error("This is an exception!")
 ```
 ````
 
-## Example with a named block
+### Example with a named block
 
 First block:
 
@@ -142,7 +147,7 @@ z = y^2
 z = y^2
 ```
 
-## Modifying the delay
+### Modifying the delay
 Delay of 0:
 
 ````markdown
@@ -173,4 +178,11 @@ Delay of 1:
 1
 2
 3
+```
+
+
+### Reference docs
+
+```@docs
+Asciicast.assets
 ```
