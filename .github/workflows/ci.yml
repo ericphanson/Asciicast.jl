@@ -13,6 +13,7 @@ on:
       - 'src/**'
       - 'deps/**'
       - 'Project.toml'
+      - 'README.md' # since we test the README
   pull_request:
     types: [opened, synchronize, reopened]
     paths:
@@ -21,6 +22,7 @@ on:
       - 'src/**'
       - 'deps/**'
       - 'Project.toml'
+      - 'README.md' # since we test the README
 concurrency:
   # Skip intermediate builds: always.
   # Cancel intermediate builds: only if it is a pull request build.
