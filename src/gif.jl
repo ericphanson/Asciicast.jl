@@ -1,10 +1,10 @@
 """
-    save_code_gif(output_path, code_string; delay=0.25, font_size=28)
+    save_code_gif(output_path, code_string; delay=0.25, font_size=28, height=nothing, allow_errors=true)
 
 Given Julia source code as a string, run the code in a REPL mode and save the results as a gif to `output_path`.
 """
-function save_code_gif(output_path, code_string; delay=0.25, font_size=28)
-    cast = _cast_str(code_string, delay)
+function save_code_gif(output_path, code_string; delay=0.25, font_size=28, height=nothing, allow_errors=true)
+    cast = _cast_str(code_string, delay; height, allow_errors)
     save_gif(output_path, cast::Cast; font_size)
     return output_path
 end
@@ -39,21 +39,28 @@ function get_attribute(attributes, key, default)
     return value
 end
 
-
 # Pandoc filter to add gifs with the contents of `julia {cast="true"}` code blocks.
 function cast_action(tag, content, format, meta; base_dir, counter)
     tag == "CodeBlock" || return nothing
+    isempty(content) && return nothing
+    length(content[1]) < 2 && return nothing
+    isempty(content[1][2]) && return nothing
     content[1][2][1] == "julia" || return nothing
     attributes = content[1][3]
     ["cast", "true"] in attributes || return nothing
     font_size = get_attribute(attributes, "font-size", 28)
     delay = get_attribute(attributes, "delay", 0.25)
+    height = get_attribute(attributes, "height", 0)
+    allow_errors = get_attribute(attributes, "allow_errors", true)
+    if height == 0
+        height = nothing
+    end
     block = content[2]
     counter[] += 1
     c = counter[]
     name = "output_$(c)_@cast.gif"
     rel_path = joinpath("assets", name)
-    save_code_gif(joinpath(base_dir, rel_path), block; delay, font_size)
+    save_code_gif(joinpath(base_dir, rel_path), block; delay, font_size, height, allow_errors)
     return [
         Pandoc.CodeBlock(content...)
         Pandoc.Para([Pandoc.Image(["", [], []], [], [rel_path, ""])])

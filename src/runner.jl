@@ -215,10 +215,10 @@ macro cast_str(code_string, delay=0)
     return _cast_str(code_string, delay)
 end
 
-function _cast_str(code_string, delay=0)
+function _cast_str(code_string, delay=0; height=nothing, allow_errors=true)
     n_lines = length(split(code_string))
-    height = min(n_lines * 2, 24) # try to choose the number of lines more appropriately
+    height = something(height, min(n_lines * 2, 24)) # try to choose the number of lines more appropriately
     cast = Cast(IOBuffer(), Header(; height); delay=delay)
-    cast_from_string!(code_string, cast)
+    cast_from_string!(code_string, cast; allow_errors)
     return cast
 end
