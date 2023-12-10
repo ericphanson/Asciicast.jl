@@ -176,3 +176,10 @@ Delay of 1:
 2
 3
 ```
+
+
+### Reference docs
+
+```@docs
+Asciicast.assets
+```
