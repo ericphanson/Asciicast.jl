@@ -30,7 +30,7 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
     ansicolor = _any_color_fmt(doc)
     hide_inputs = false
     allow_errors = true
-    delay = 0.5
+    delay = 0.25
     if kwargs !== nothing
         matched = match(r"\bansicolor\s*=\s*(true|false)\b", kwargs)
         if matched !== nothing

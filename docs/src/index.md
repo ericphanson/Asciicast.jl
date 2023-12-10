@@ -13,7 +13,7 @@ cast"""
     using Pkg
     Pkg.status()
     1 + 1
-    """0.5
+    """0.25
 ```
 
 This example creates a [`Cast`](@ref) object using the [`@cast_str`](@ref) macro, which captures the input and the output. Check out [Creating casts](@ref) for more on creating `Cast` objects (or [Cast files](@ref) for a lower level API, if you are interested).

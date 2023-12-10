@@ -10,7 +10,7 @@ cast"""
     using Pkg
     Pkg.status()
     1 + 1
-    """0.5
+    """0.25
 ```
 
 The `Cast` objects have a `show` method defined for HTML, allowing rich display with a local [asciinema-player](https://github.com/asciinema/asciinema-player), in Documenter, Pluto, jupyter, etc. For convenient use with Documenter in particular, see the `@cast` syntax in [Documenter usage](@ref). Note that this player needs the asciinema-player javascript and CSS assets to be loaded.
