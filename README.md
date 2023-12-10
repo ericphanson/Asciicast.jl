@@ -11,12 +11,12 @@ It does so in a few ways:
 
 - provides a convenient way to generate and maintain gifs showing code
   execution in READMEs and other documents. See the [Markdown
-  Usage](https://ericphanson.github.io/Asciicast.jl/dev/markdown_usage/])
+  Usage](https://ericphanson.github.io/Asciicast.jl/dev/markdown_usage/)
   portion of the docs.
 - provides integration with Documenter, providing `@cast` Documenter
   blocks that render code outputs as gifs in Documenter websites. See
   the [Documenter
-  Usage](https://ericphanson.github.io/Asciicast.jl/dev/documenter_usage/])
+  Usage](https://ericphanson.github.io/Asciicast.jl/dev/documenter_usage/)
   portion of the docs.
 - provides functionality to generate `asciicast` files (using the [v2
   file
@@ -26,7 +26,7 @@ It does so in a few ways:
   be played in the terminal or uploaded to asciinema.org with the
   `asciinema` player, or played in a web browser using
   [asciinema-player](https://github.com/asciinema/asciinema-player). See
-  the [docs](https://ericphanson.github.io/Asciicast.jl/dev/]) for more.
+  the [docs](https://ericphanson.github.io/Asciicast.jl/dev/) for more.
 
 Demo:
 
