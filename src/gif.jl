@@ -98,7 +98,7 @@ Returns the number of gifs generated.
     or specifying an `output_path` that is different from the input path, in order to assess
     the results.
 """
-function cast_document(input_path, output_path=input_path; format="gfm+attributes")
+function cast_document(input_path, output_path=input_path; format="gfm+attributes", hacky_fix=true)
     json = JSON3.read(read(`$(pandoc()) -f $format -t json $input_path`), Dict)
     base_dir = dirname(output_path)
     mkpath(joinpath(base_dir, "assets"))
@@ -107,6 +107,14 @@ function cast_document(input_path, output_path=input_path; format="gfm+attribute
     output = JSON3.write(Pandoc.filter(json, [rm_old_gif, act]))
     open(`$(pandoc()) -f json -t $format --resource-path=$(base_dir) -o $output_path`; write=true) do io
         write(io, output)
+    end
+    if hacky_fix
+        # We do this since GitHub doesn't seem to display syntax highlighting
+        # on READMEs for "``` {.julia}", although VSCode does.
+        # I also think ```julia is less ugly than ``` {.julia}.
+        str = read(output_path, String)
+        str = replace(str, r"^``` {.julia "m => "```julia {")
+        write(output_path, str)
     end
     return counter[]
 end

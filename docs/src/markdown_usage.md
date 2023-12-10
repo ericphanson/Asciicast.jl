@@ -16,7 +16,7 @@ Pkg.status()
 Then run [`cast_document`](@ref) (or the helper [`cast_readme`](@ref)) on the file. This will turn it into:
 
 ````markdown
-``` {.julia cast="true"}
+```julia {cast="true"}
 using Pkg
 Pkg.status()
 ```
