@@ -175,7 +175,7 @@ function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(
         if isempty(input) || isempty(output)
             println(out)
         else
-            println(out, output)
+            println(out, output, "\n")
         end
         outstr = String(take!(out))
         # Replace references to gensym'd module with Main
