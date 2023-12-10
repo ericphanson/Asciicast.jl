@@ -7,7 +7,10 @@ This can be done using the [`Asciicast.assets`](@ref) function, e.g.
 ```julia
 makedocs(;
     # ...
-    assets = Asciicast.assets()
+    format=Documenter.HTML(;
+        assets=Asciicast.assets(),
+        # ...
+    ),
 )
 ```
 
