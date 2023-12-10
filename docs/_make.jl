@@ -23,6 +23,7 @@ makedocs(;
         "Documenter usage" => "documenter_usage.md",
         "Markdown usage" => "markdown_usage.md",
         "Cast files" => "cast_files.md",
+        "Limitations" => "limitations.md",
         hide("Pandoc" => "Pandoc.md"),
     ],
 )

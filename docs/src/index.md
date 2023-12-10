@@ -27,5 +27,5 @@ Likewise, check out [Markdown usage](@ref) for using Asciicast.jl to generate an
 
 ```@contents
 Depth = 2:3
-Pages = ["index.md", "creating_casts.md", "documenter_usage.md", "markdown_usage.md", "cast_files.md"]
+Pages = ["index.md", "creating_casts.md", "documenter_usage.md", "markdown_usage.md", "cast_files.md", "limitations.md"]
 ```

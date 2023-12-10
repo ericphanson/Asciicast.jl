@@ -31,22 +31,47 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
     hide_inputs = false
     allow_errors = true
     delay = 0.25
+    height = nothing
+    loop = false
     if kwargs !== nothing
+        # ansicolor
         matched = match(r"\bansicolor\s*=\s*(true|false)\b", kwargs)
         if matched !== nothing
             ansicolor = matched[1] == "true"
         end
 
+        # hide_inputs
         matched = match(r"\bhide_inputs\s*=\s*(true|false)\b", kwargs)
         if matched !== nothing
             hide_inputs = matched[1] == "true"
         end
 
+        # allow_errors
         matched = match(r"\ballow_errors\s*=\s*(true|false)\b", kwargs)
         if matched !== nothing
             allow_errors = matched[1] == "true"
         end
 
+        # height
+        matched = match(r"\bheight\s*=\s*([0-9]+)", kwargs)
+        if matched !== nothing
+            height = parse(Int, matched[1])
+        end
+
+        # loop
+        # bool:
+        matched = match(r"\bloop\s*=\s*(true|false)\b", kwargs)
+        if matched !== nothing
+            loop = matched[1] == "true"
+        else
+            # integer:
+            matched = match(r"\bloop\s*=\s*([0-9]+)", kwargs)
+            if matched !== nothing
+                loop = parse(Int, matched[1])
+            end
+        end
+
+        # delay
         # match integer delay
         matched = match(r"\bdelay\s*=\s*([0-9]+)", kwargs)
         if matched !== nothing
@@ -63,10 +88,12 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
     multicodeblock = MarkdownAST.CodeBlock[]
 
     n_lines = length(split(x.code))
-    height = min(n_lines * 2, 24) # try to choose the number of lines more appropriately
-    cast = Cast(IOBuffer(), Header(; height, idle_time_limit=1); delay=delay)
 
-    cast_from_string!(x.code, cast; doc=doc, page=page, ansicolor=ansicolor, mod=mod, multicodeblock=multicodeblock, allow_errors, x)
+    # If `height` isn't provided, we guess the number of lines:
+    height = something(height, min(n_lines * 2, 24))
+    cast = Cast(IOBuffer(), Header(; height, idle_time_limit=1); delay, loop)
+
+    cast_from_string!(x.code, cast; doc, page, ansicolor, mod, multicodeblock, allow_errors, x)
 
     raw_html = sprint(show, MIME"text/html"(), cast)
 
@@ -153,12 +180,13 @@ function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(
         outstr = String(take!(out))
         # Replace references to gensym'd module with Main
         outstr = remove_sandbox_from_output(outstr, mod)
+
         if i == n
+            # On the last line, we chomp the extra newline we tend to get
             trimmed = chomp(outstr)
             if !isempty(trimmed)
                 write_event!(cast, OutputEvent, trimmed)
             end
-
         else
             write_event!(cast, OutputEvent, outstr)
         end
