@@ -88,8 +88,14 @@ include(joinpath(pkgdir(Asciicast), "docs", "_make.jl"))
 # Test that the README functionality works, and the README is up-to-date:
 tmp = mktempdir()
 output = joinpath(tmp, "output.md")
-Asciicast.cast_readme(Asciicast, output)
+cast_readme(Asciicast, output)
 existing_readme = read(joinpath(pkgdir(Asciicast), "README.md"), String)
 updated_readme = read(output, String)
 # If this fails, you can just update the README with `Asciicast.cast_readme(Asciicast)`.
 @test existing_readme == updated_readme
+
+# Check that we can parse both blocks and produce the gif tags.
+cast_document("test_doc.md", output)
+str = read(output, String)
+@test contains(str, "output_1_@cast.gif")
+@test contains(str, "output_2_@cast.gif")

@@ -30,7 +30,7 @@ It does so in a few ways:
 
 Demo:
 
-``` julia:@cast
+``` {.julia cast="true"}
 @info "Hello!"
 println("That was a logging statement, but this is printing.")
 x = rand(10, 10)
@@ -42,3 +42,10 @@ println("ok, done!")
 ```
 
 ![](assets/output_1_@cast.gif)
+
+``` {.julia cast="true" font-size="28" delay="0.5"}
+using Pkg
+Pkg.status()
+```
+
+![](assets/output_2_@cast.gif)
