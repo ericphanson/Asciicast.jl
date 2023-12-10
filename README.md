@@ -30,7 +30,7 @@ It does so in a few ways:
 
 Demo:
 
-``` {.julia cast="true"}
+```julia {cast="true"}
 @info "Hello!"
 println("That was a logging statement, but this is printing.")
 x = rand(10, 10)
