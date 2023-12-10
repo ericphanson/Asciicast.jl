@@ -154,6 +154,7 @@ end
 
 include("capture.jl")
 include("runner.jl")
+include("gif.jl")
 
 """
     record_output(f, filepath::AbstractString, start_time::Float64=time(); delay=0, kw...) -> filepath
@@ -230,5 +231,6 @@ function assets(asciinema_version = "3.6.3")
     return [Documenter.asset(asciinema_js_url; class=:js),
             Documenter.asset(asciinema_css_url; class=:css)]
 end
+
 
 end # module
