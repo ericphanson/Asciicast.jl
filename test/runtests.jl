@@ -95,7 +95,7 @@ updated_readme = read(output, String)
 @test existing_readme == updated_readme
 
 # Check that we can parse both blocks and produce the gif tags.
-cast_document("test_doc.md", output)
+@test cast_document("test_doc.md", output) == 2
 str = read(output, String)
 @test contains(str, "output_1_@cast.gif")
 @test contains(str, "output_2_@cast.gif")

@@ -49,8 +49,8 @@ function cast_action(tag, content, format, meta; base_dir, counter)
     font_size = get_attribute(attributes, "font-size", 28)
     delay = get_attribute(attributes, "delay", 0.25)
     block = content[2]
-    c = counter[]
     counter[] += 1
+    c = counter[]
     name = "output_$(c)_@cast.gif"
     rel_path = joinpath("assets", name)
     save_code_gif(joinpath(base_dir, rel_path), block; delay, font_size)
@@ -80,7 +80,7 @@ cast_readme(mod::Module) = cast_document(joinpath(pkgdir(mod), "README.md"))
 cast_readme(mod::Module, output_path) = cast_document(joinpath(pkgdir(mod), "README.md"), output_path)
 
 """
-    cast_document(input_path, output_path=input_path; format="gfm")
+    cast_document(input_path, output_path=input_path; format="gfm+attributes")
 
 For each `julia {cast="true"}` code-block in the input document, generates a gif
 executing that code in a REPL, saves it to `joinpath(dirname(output_path), "assets")`
@@ -102,7 +102,7 @@ function cast_document(input_path, output_path=input_path; format="gfm+attribute
     json = JSON3.read(read(`$(pandoc()) -f $format -t json $input_path`), Dict)
     base_dir = dirname(output_path)
     mkpath(joinpath(base_dir, "assets"))
-    counter = Ref{Int}(1)
+    counter = Ref{Int}(0)
     act = (args...) -> cast_action(args...; base_dir, counter)
     output = JSON3.write(Pandoc.filter(json, [rm_old_gif, act]))
     open(`$(pandoc()) -f json -t $format --resource-path=$(base_dir) -o $output_path`; write=true) do io
