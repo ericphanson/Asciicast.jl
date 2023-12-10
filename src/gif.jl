@@ -42,8 +42,8 @@ end
 # Pandoc filter to add gifs with the contents of `julia {cast="true"}` code blocks.
 function cast_action(tag, content, format, meta; base_dir, counter)
     tag == "CodeBlock" || return nothing
-    isempty(content) && return nothing
-    length(content[1]) < 2 && return nothing
+    length(content) < 2 && return nothing
+    length(content[1]) < 3 && return nothing
     isempty(content[1][2]) && return nothing
     content[1][2][1] == "julia" || return nothing
     attributes = content[1][3]
