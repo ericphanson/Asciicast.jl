@@ -1,9 +1,9 @@
 
-function gif()
-
-    ```
-    agg --font-size 28 input.cast output.gif
-    ```
+function gif(code_string)
+    cast = _cast_str(code_string)
+    save("input.cast", cast)
+    run(pipeline(`agg --font-size 28 input.cast output.gif`; stdout=devnull, stderr=devnull))
+    return "output.gif"
 end
 
 
@@ -20,36 +20,111 @@ Returns a modified tree.
   * or a list of Pandoc elements which will be spliced into the list the original object belongs to.
 """
 
-function walk(x :: Any, action :: Function)
+function walk!(x :: Any, action :: Function, format, meta)
     return x
 end
 
-function walk(x :: Array, action :: Function)
+function walk!(x :: AbstractArray, action :: Function, format, meta)
   array = []
-    for item in x
-      if (typeof(item)<:Dict) && haskey(item,"t")
-        res = action(item["t"], get(item, "c", nothing))
-        if res === nothing
-          append!(array, [walk(item, action)])
-        elseif typeof(res)<:Array
-          append!(array, walk(res, action))
-        else
-          append!(array, [walk(res, action)])
+  w!(z) = walk!(z, action, format, meta)
+  for item in x
+    if (item isa AbstractDict) && haskey(item,"t")
+      res = action(item["t"], get(item, "c", nothing), format, meta)
+      if res === nothing
+        push!(array, w!(item))
+      elseif res isa AbstractArray
+        for z in res
+          push!(array, w!(z))
         end
       else
-        append!(array, [walk(item, action)])
-      end #if
-    end #for
+        push!(array, w!(res))
+      end
+    else
+      push!(array, w!(item))
+    end #if
+  end #for
   return array
 end
 
-function walk(dict :: Dict, action :: Function)
-    [key=>walk(value,action) for (key,value) in dict]
+function walk!(dict :: AbstractDict, action :: Function, format, meta)
+  # Python version (mutating):
+  for k in keys(dict)
+    dict[k] = walk!(dict[k], action, format, meta)
+  end
+  return dict
+  # Dict(key => walk!(value,action, format, meta) for (key,value) in dict)
 end
 
-function show_action(args...)
-    # @show args
-    return nothing
+
+function elt(eltType, numargs)
+    function fun(args...)
+        lenargs = length(args)
+        if lenargs != numargs
+            throw(ArgumentError("$eltType expects $numargs arguments, but given $lenargs"))
+        end
+        if numargs == 0
+            return Dict("t" => eltType)
+        elseif numargs == 1
+            xs = args[1]
+        else
+            xs = collect(args)
+        end
+        return Dict("t" => eltType, "c" => xs)
+      end
+    return fun
+end
+# Constructors for block elements
+
+
+const Plain = elt("Plain", 1)
+const Para = elt("Para", 1)
+const CodeBlock = elt("CodeBlock", 2)
+const RawBlock = elt("RawBlock", 2)
+const BlockQuote = elt("BlockQuote", 1)
+const OrderedList = elt("OrderedList", 2)
+const BulletList = elt("BulletList", 1)
+const DefinitionList = elt("DefinitionList", 1)
+# const Header = elt("Header", 3)
+const HorizontalRule = elt("HorizontalRule", 0)
+const Table = elt("Table", 5)
+const Div = elt("Div", 2)
+const Null = elt("Null", 0)
+
+# Constructors for inline elements
+
+const Str = elt("Str", 1)
+const Emph = elt("Emph", 1)
+const Strong = elt("Strong", 1)
+const Strikeout = elt("Strikeout", 1)
+const Superscript = elt("Superscript", 1)
+const Subscript = elt("Subscript", 1)
+const SmallCaps = elt("SmallCaps", 1)
+const Quoted = elt("Quoted", 2)
+const Cite = elt("Cite", 2)
+const Code = elt("Code", 2)
+const Space = elt("Space", 0)
+const LineBreak = elt("LineBreak", 0)
+const Math = elt("Math", 2)
+const RawInline = elt("RawInline", 2)
+const Link = elt("Link", 3)
+const Image = elt("Image", 3)
+const Note = elt("Note", 1)
+const SoftBreak = elt("SoftBreak", 0)
+const Span = elt("Span", 2)
+
+
+function show_action(tag, content, format, meta)
+    tag == "CodeBlock" || return nothing
+
+    content[1][2][1] == "julia-gif" || return nothing
+
+    block = content[2]
+    img_path = gif(block)
+
+    return [
+        CodeBlock(content...)
+        Para([Image(["", [], []], [], [img_path, ""])])
+        ]
 end
 
 function xyz()
@@ -63,7 +138,7 @@ function xyz()
         meta = Dict()
     end
     for action in [show_action]
-        doc = walk(doc, (t,c)->action(t,c,format,meta))
+        doc = walk!(doc, action, format, meta)
     end
     JSON3.write(stdout, doc)
 end

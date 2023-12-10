@@ -70,7 +70,7 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
     cast_from_string!(x.code, cast; doc=doc, page=page, ansicolor=ansicolor, mod=mod, multicodeblock=multicodeblock, allow_errors, x)
 
     raw_html = sprint(show, MIME"text/html"(), cast)
-    
+
     # https://github.com/JuliaDocs/Documenter.jl/blob/c5a89ab8a56c9e9c77497070a57362659aadd131/src/expander_pipeline.jl#L58C4-L64C8
     node.element = Documenter.MultiOutput(MarkdownAST.CodeBlock("julia-repl", ""))
 
@@ -185,6 +185,10 @@ Asciicast.save("test.cast", c)
 
 """
 macro cast_str(code_string, delay=0)
+    return _cast_str(code_string, delay)
+end
+
+function _cast_str(code_string, delay=0)
     n_lines = length(split(code_string))
     height = min(n_lines * 2, 24) # try to choose the number of lines more appropriately
     cast = Cast(IOBuffer(), Header(; height); delay=delay)
