@@ -9,7 +9,7 @@ using Documenter: Expanders, Selectors, iscode, _any_color_fmt, droplines, prepe
 using Documenter.Expanders: ExpanderPipeline
 using UUIDs
 using MarkdownAST
-using pandoc_jll
+using pandoc_jll, agg_jll
 
 export Cast, OutputEvent, InputEvent, write_event!, record_output
 export cast_document, cast_readme

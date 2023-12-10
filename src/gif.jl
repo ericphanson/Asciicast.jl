@@ -20,7 +20,7 @@ function save_gif(output_path, cast::Cast)
         save(input_path, cast)
         # Larger font size to reduce blurriness:
         # https://github.com/asciinema/agg/issues/60#issuecomment-1807910643
-        run(pipeline(`agg --font-size 28 $input_path $output_path`; stdout=devnull, stderr=devnull))
+        run(pipeline(`$(agg()) --font-size 28 $input_path $output_path`; stdout=devnull, stderr=devnull))
     end
     return output_path
 end
