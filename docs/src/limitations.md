@@ -21,7 +21,7 @@ end
 
 One workaround here is to use a `begin` or `let` block, to group lines that need to share access to the `stdout` object:
 
-```@cast
+```@cast; height=10
 using ProgressMeter
 begin
 prog = ProgressThresh(1e-5; desc="Minimizing:")
