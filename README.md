@@ -42,3 +42,12 @@ println("ok, done!")
 ```
 
 ![](assets/output_1_@cast.gif)
+
+## Alternatives to Asciicast.jl
+
+* It is easy to use the CLI tool [asciinema](https://asciinema.org/) directly to record sessions to `.cast` files or otherwise. That can be a good option if you need keyboard input or face some of the other [Limitations of asciicast.jl](https://ericphanson.github.io/Asciicast.jl/dev/limitations/#Limitations).
+  * In contrast, Asciicast.jl has an advantage in maintainability, in that you don't need to manually re-run sessions to regenerate the outputs.
+* [Replay.jl](https://github.com/AtelierArith/Replay.jl) provides a similar Julia-based alternative. Some of the differences I can ascertain:
+  * Asciicast.jl is based on Documenter's code execution sandboxes (which [have their limitations](https://ericphanson.github.io/Asciicast.jl/dev/limitations/#Cannot-rely-on-stdout-(or-stderr)-in-one-line-being-still-open-in-the-next)), while Replay.jl has it's own implementation.
+  * Asciicast.jl provides Documenter and pandoc-based document integration with `@cast` blocks and `{cast="true"}` blocks, while Replay seems focused on the core replaying-of-sessions. Perhaps these could be composed together somehow?
+  * Possibly other differences; I am not very familiar with Replay.jl. PRs to improve this comparison are appreciated!
