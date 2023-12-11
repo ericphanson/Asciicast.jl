@@ -37,12 +37,32 @@ Note that the attributes must be separated by spaces, not commas, as shown above
 
 Here, the gifs are generated with [`agg`](https://github.com/asciinema/agg) (which is installed automatically using a JLL package), and the font-size parameter is passed there. Currently no other `agg` parameters are supported, but file an issue if you have a use for one.
 
+### Named blocks
+
+One can name blocks to continue execution after interrupting by some text. For example:
+````markdown
+Here we have `x`:
+```julia {cast="true" name="ex1"}
+x=2
+
+```
+
+Now we add 1:
+```julia {cast="true" name="ex1"}
+y = x+1
+
+```
+````
+
+This works the same way as [named example blocks in Documenter](https://documenter.juliadocs.org/stable/man/syntax/#@example-block).
+
 ### All supported attributes
 
 * `delay::Float64=0.25`. The amount of delay between line executions (to emulate typing time).
 * `font-size::Int=28`. Used by `agg` when generating the gif.
 * `height::Int`. Heuristically determined by default. Set to an integer to specify the number of lines.
 * `allow_errors::Bool=false`. Whether or not [`cast_document`](@ref) (or [`cast_readme`](@ref)) should fail if exceptions are encountered during execution of the block.
+* `name::String`. Optionally provide a name to allow running multiple examples in the same module, similar to named example blocks in Documenter.
 
 ### Syntax notes
 
