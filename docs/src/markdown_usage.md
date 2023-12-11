@@ -42,7 +42,7 @@ Here, the gifs are generated with [`agg`](https://github.com/asciinema/agg) (whi
 * `delay::Float64=0.25`. The amount of delay between line executions (to emulate typing time).
 * `font-size::Int=28`. Used by `agg` when generating the gif.
 * `height::Int`. Heuristically determined by default. Set to an integer to specify the number of lines.
-* `allow_errors::Bool=true`. Whether or not [`cast_documents`](@ref) should fail if exceptions are encountered during execution of the block.
+* `allow_errors::Bool=true`. Whether or not [`cast_document`](@ref) (or [`cast_readme`](@ref)) should fail if exceptions are encountered during execution of the block.
 
 ### Syntax notes
 

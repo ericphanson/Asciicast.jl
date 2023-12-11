@@ -106,13 +106,13 @@ Returns the number of gifs generated.
     the results.
 """
 function cast_document(input_path, output_path=input_path; format="gfm+attributes", hacky_fix=true)
-    json = JSON3.read(read(`$(pandoc()) -f $format -t json $input_path`), Dict)
+    json = JSON3.read(read(`$(pandoc()) --wrap=preserve -f $format -t json $input_path`), Dict)
     base_dir = dirname(output_path)
     mkpath(joinpath(base_dir, "assets"))
     counter = Ref{Int}(0)
     act = (args...) -> cast_action(args...; base_dir, counter)
     output = JSON3.write(Pandoc.filter(json, [rm_old_gif, act]))
-    open(`$(pandoc()) -f json -t $format --resource-path=$(base_dir) -o $output_path`; write=true) do io
+    open(`$(pandoc()) -f json -t $format --wrap=preserve --resource-path=$(base_dir) -o $output_path`; write=true) do io
         write(io, output)
     end
     if hacky_fix
@@ -120,7 +120,7 @@ function cast_document(input_path, output_path=input_path; format="gfm+attribute
         # on READMEs for "``` {.julia}", although VSCode does.
         # I also think ```julia is less ugly than ``` {.julia}.
         str = read(output_path, String)
-        str = replace(str, r"^``` {.julia "m => "```julia {")
+        str = replace(str, r"^``` {.julia "m => "```julia {", r"^``` julia"m => "```julia")
         write(output_path, str)
     end
     return counter[]

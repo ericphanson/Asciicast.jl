@@ -83,21 +83,35 @@ end
 end
 
 # Test that the docs build:
-include(joinpath(pkgdir(Asciicast), "docs", "_make.jl"))
-
-# Test that the README functionality works, and the README is up-to-date:
-tmp = mktempdir()
-output = joinpath(tmp, "output.md")
-cast_readme(Asciicast, output)
-existing_readme = read(joinpath(pkgdir(Asciicast), "README.md"), String)
-updated_readme = read(output, String)
-if !Sys.iswindows() # skip windows bc backslashes change etc
-    # If this fails, you can just update the README with `Asciicast.cast_readme(Asciicast)`.
-    @test existing_readme == updated_readme
+@testset "Docs build" begin
+    include(joinpath(pkgdir(Asciicast), "docs", "_make.jl"))
 end
 
-# Check that we can parse both blocks and produce the gif tags.
-@test cast_document("test_doc.md", output) == 2
-str = read(output, String)
-@test contains(str, "output_1_@cast.gif")
-@test contains(str, "output_2_@cast.gif")
+@testset "README updated" begin
+    # Test that the README functionality works, and the README is up-to-date:
+    tmp = mktempdir()
+    output = joinpath(tmp, "output.md")
+    cast_readme(Asciicast, output)
+    existing_readme = read(joinpath(pkgdir(Asciicast), "README.md"), String)
+    updated_readme = read(output, String)
+    if !Sys.iswindows() # skip windows bc backslashes change etc
+        # If this fails, you can just update the README with `Asciicast.cast_readme(Asciicast)`.
+        @test existing_readme == updated_readme
+    end
+end
+
+@testset "markdown parsing" begin
+    tmp = mktempdir()
+    output = joinpath(tmp, "output.md")
+    # Check that we can parse both blocks and produce the gif tags.
+    @test cast_document("test_doc.md", output) == 2
+    str = read(output, String)
+    @test contains(str, "output_1_@cast.gif")
+    @test contains(str, "output_2_@cast.gif")
+end
+
+@testset "markdown errors" begin
+    tmp = mktempdir()
+    output = joinpath(tmp, "output.md")
+    @test_throws CastExecutionException cast_document("bad.md", output)
+end

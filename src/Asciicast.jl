@@ -13,7 +13,7 @@ using pandoc_jll, agg_jll
 
 export Cast, OutputEvent, InputEvent, write_event!, record_output
 export cast_document, cast_readme
-export @cast_str
+export @cast_str, CastExecutionException
 
 const Object = Dict{String, String}
 
