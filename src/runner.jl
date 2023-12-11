@@ -139,9 +139,24 @@ function Base.showerror(io::IO, c::CastExecutionException)
         """)
 end
 
-function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(), page=FakePage(), ansicolor=true, mod=Module(), multicodeblock=MarkdownAST.CodeBlock[], allow_errors=false, x=nothing)
+function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(), page=FakePage(), ansicolor=true, mod=Module(), multicodeblock=MarkdownAST.CodeBlock[], allow_errors=false, x=nothing, remove_prompt=false)
     linenumbernode = LineNumberNode(0, "REPL") # line unused, set to 0
     @debug "Evaluating @cast:\n$(x.code)"
+
+    # if there are prompts, and we are to remove them, we will use
+    # prompt-pasting semantics, where only lines with the prompt count,
+    # and those prompts are removed.
+    # xref https://github.com/JuliaLang/julia/pull/17599/files
+    if remove_prompt && contains(code_string, r"^julia>"m)
+        code_string_io = IOBuffer()
+        for line in eachsplit(code_string, r"(?>\r\n|\n|\r)")
+            startswith(line, "julia>") || continue
+            n = 6 # length("julia>")
+            n += startswith(" ", line)
+            println(code_string_io, @view(line[(n+1):end]))
+        end
+        code_string = String(take!(code_string_io))
+    end
 
     pb = Documenter.parseblock(code_string, doc, page; keywords=false,
         linenumbernode=linenumbernode)
@@ -240,10 +255,10 @@ macro cast_str(code_string, delay=0, allow_errors=false)
     return _cast_str(code_string, delay; allow_errors)
 end
 
-function _cast_str(code_string, delay=0; height=nothing, allow_errors=false)
+function _cast_str(code_string, delay=0; height=nothing, allow_errors=false, mod=Module())
     n_lines = length(split(code_string))
     height = something(height, min(n_lines * 2, 24)) # try to choose the number of lines more appropriately
     cast = Cast(IOBuffer(), Header(; height); delay=delay)
-    cast_from_string!(code_string, cast; allow_errors)
+    cast_from_string!(code_string, cast; allow_errors, remove_prompt=true, mod)
     return cast
 end

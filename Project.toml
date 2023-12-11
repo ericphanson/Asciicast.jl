@@ -34,7 +34,7 @@ StructTypes = "1.7"
 Test = "<0.0.1,1"
 UUIDs = "<0.0.1,1"
 agg_jll = "1.4.3"
-julia = "1.7"
+julia = "1.8"
 pandoc_jll = "3.1.9"
 
 [extras]

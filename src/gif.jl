@@ -3,8 +3,8 @@
 
 Given Julia source code as a string, run the code in a REPL mode and save the results as a gif to `output_path`.
 """
-function save_code_gif(output_path, code_string; delay=0.25, font_size=28, height=nothing, allow_errors=false, cast_path=nothing)
-    cast = _cast_str(code_string, delay; height, allow_errors)
+function save_code_gif(output_path, code_string; delay=0.25, font_size=28, height=nothing, allow_errors=false, cast_path=nothing, mod=Module())
+    cast = _cast_str(code_string, delay; height, allow_errors, mod)
     save_gif(output_path, cast::Cast; font_size, cast_path)
     return output_path
 end
@@ -40,14 +40,14 @@ function get_attribute(attributes, key, default)
         value = tryparse(typeof(default), attributes[idx][2])
         if value === nothing
             @warn "Invalid $(key) $(attributes[idx][2]). Using default value $default."
-            value = 28
+            value = default
         end
     end
     return value
 end
 
 # Pandoc filter to add gifs with the contents of `julia {cast="true"}` code blocks.
-function cast_action(tag, content, format, meta; base_dir, counter, save_casts)
+function cast_action(tag, content, format, meta; base_dir, counter, module_meta, save_casts)
     tag == "CodeBlock" || return nothing
     length(content) < 2 && return nothing
     length(content[1]) < 3 && return nothing
@@ -58,6 +58,9 @@ function cast_action(tag, content, format, meta; base_dir, counter, save_casts)
     font_size = get_attribute(attributes, "font-size", 28)
     delay = get_attribute(attributes, "delay", 0.25)
     height = get_attribute(attributes, "height", 0)
+    name_idx = findfirst(attr -> attr[1] == "name", attributes)
+    example_name = isnothing(name_idx) ? nothing : attributes[name_idx][2]
+
     allow_errors = get_attribute(attributes, "allow_errors", false)
     if height == 0
         height = nothing
@@ -72,7 +75,8 @@ function cast_action(tag, content, format, meta; base_dir, counter, save_casts)
     else
         cast_path = nothing
     end
-    save_code_gif(joinpath(base_dir, rel_path), block; delay, font_size, height, allow_errors, cast_path)
+    mod = Documenter.get_sandbox_module!(module_meta, "@cast", example_name)
+    save_code_gif(joinpath(base_dir, rel_path), block; delay, font_size, height, allow_errors, mod, cast_path)
     return [
         Pandoc.CodeBlock(content...)
         Pandoc.Para([Pandoc.Image(["", [], []], [], [rel_path, ""])])
@@ -126,7 +130,8 @@ function cast_document(input_path, output_path=input_path; format="gfm+attribute
     base_dir = dirname(output_path)
     mkpath(joinpath(base_dir, "assets"))
     counter = Ref{Int}(0)
-    act = (args...) -> cast_action(args...; base_dir, counter, save_casts)
+    module_meta = Dict{Symbol, Any}()
+    act = (args...) -> cast_action(args...; base_dir, counter, module_meta, save_casts)
     output = JSON3.write(Pandoc.filter(json, [rm_old_gif, act]))
     open(`$(pandoc()) -f json -t $format --wrap=preserve --resource-path=$(base_dir) -o $output_path`; write=true) do io
         write(io, output)
