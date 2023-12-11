@@ -130,3 +130,21 @@ end
     output = joinpath(tmp, "output.md")
     @test_throws CastExecutionException cast_document("bad.md", output)
 end
+
+@testset "`Cast` show methods" begin
+    c = cast"""
+       julia> 1+1
+       2
+
+       julia> 3
+       3
+       """0.25
+    vscode_str = sprint(show, MIME"juliavscode/html"(), c)
+    # Contains the JS and css:
+    @test contains(vscode_str, "asciinema-player.min.js")
+    @test contains(vscode_str, "asciinema-player.min.css")
+    @test contains(vscode_str, "AsciinemaPlayer.create")
+
+    html_str = sprint(show, MIME"text/html"(), c)
+    @test contains(html_str, "AsciinemaPlayer.create")
+end
