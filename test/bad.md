@@ -1,3 +1,3 @@
-```julia {cast="true" allow_errors="false"}
+```julia {cast="true"}
 error("bad")
 ```
