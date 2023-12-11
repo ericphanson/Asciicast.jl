@@ -255,10 +255,10 @@ macro cast_str(code_string, delay=0, allow_errors=false)
     return _cast_str(code_string, delay; allow_errors)
 end
 
-function _cast_str(code_string, delay=0; height=nothing, allow_errors=false)
+function _cast_str(code_string, delay=0; height=nothing, allow_errors=false, mod=Module())
     n_lines = length(split(code_string))
     height = something(height, min(n_lines * 2, 24)) # try to choose the number of lines more appropriately
     cast = Cast(IOBuffer(), Header(; height); delay=delay)
-    cast_from_string!(code_string, cast; allow_errors, remove_prompt=true)
+    cast_from_string!(code_string, cast; allow_errors, remove_prompt=true, mod)
     return cast
 end

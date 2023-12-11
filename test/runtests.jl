@@ -118,11 +118,12 @@ end
     tmp = mktempdir()
     output = joinpath(tmp, "output.md")
     # Check that we can parse these blocks and produce the gif tags.
-    @test cast_document("test_doc.md", output) == 3
+    n = 6
+    @test cast_document("test_doc.md", output) == n
     str = read(output, String)
-    @test contains(str, "output_1_@cast.gif")
-    @test contains(str, "output_2_@cast.gif")
-    @test contains(str, "output_3_@cast.gif")
+    for i in 1:n
+        @test contains(str, "output_$(i)_@cast.gif")
+    end
 end
 
 @testset "markdown errors" begin

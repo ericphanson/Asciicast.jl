@@ -10,11 +10,21 @@
 error("oops")
 ```
 
-```julia {cast="true" allow_errors="true"}
+```julia {cast="true"}
 julia> 1+1
 2
 
 julia> 3
 3
+
+```
+
+```julia {cast="true" name="ex1"}
+x=2
+
+```
+
+```julia {cast="true" name="ex1"}
+y = x+1
 
 ```
