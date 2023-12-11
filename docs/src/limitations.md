@@ -34,8 +34,9 @@ end
 
 ### Limited emoji support in gifs
 
-This is an [agg](https://github.com/asciinema/agg#emoji) limitation. Currently, emojis are only supported if you install the font [Noto Emoji](https://fonts.google.com/noto/specimen/Noto+Emoji), and they are monochrome only (not color).
+This is an [agg](https://github.com/asciinema/agg#emoji) limitation[^1]. Currently, emojis are only supported if you install the font [Noto Emoji](https://fonts.google.com/noto/specimen/Noto+Emoji), and they are monochrome only (not color).
 
+[^1]: In fact, this is an [even further upstream issue](https://github.com/asciinema/agg/issues/28#issuecomment-1490383327) in the renderers used by `agg`.
 
 ## Non-limitations
 
