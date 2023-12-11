@@ -40,7 +40,7 @@ This is an [agg](https://github.com/asciinema/agg#emoji) limitation[^1]. Current
 
 ## Non-limitations
 
-### ANSI escape codes do work properly
+### ANSI escape codes work properly
 
 Tools like ProgressMeter.jl use escape codes so modify the terminal state so that the progress meter overwrites itself. This isn't compatible with standard `@repl` blocks:
 
