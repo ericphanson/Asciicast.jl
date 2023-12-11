@@ -143,13 +143,22 @@ end
 
 collect_bytes(cast::Cast) = collect_bytes(cast.write_handle)
 
-function Base.show(io::IO, mime::MIME"text/html", cast::Cast)
-    base64_str = base64encode(collect_bytes(cast))
+Base.show(io::IO, ::MIME"text/html", cast::Cast) = show_html(io, cast)
+function Base.show(io::IO, ::MIME"juliavscode/html", cast::Cast)
+    nodes = Documenter.HTMLWriter.asset_links(".", Asciicast.assets())
+    for node in nodes
+        print(io, node)
+    end
+    show_html(io, cast)
+end
+
+function show_html(io::IO, cast::Cast)
+        base64_str = base64encode(collect_bytes(cast))
     name = uuid4()
     # Note: the extra div with `margin` is me trying to make the asciinema player
     # have a little space around it, so it looks better in documenter pages etc.
     # I don't know what I'm doing; if this is bad, make a PR to improve it!
-    html = HTML("""
+    html = """
     <div style="margin: 20px">
     <div id="$(name)"></div>
     <script>
@@ -159,8 +168,8 @@ function Base.show(io::IO, mime::MIME"text/html", cast::Cast)
     );
     </script>
     </div>
-    """)
-    return show(io, mime, html)
+    """
+    return print(io, html)
 end
 
 """

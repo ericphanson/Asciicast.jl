@@ -9,3 +9,12 @@
 ```julia {cast="true" allow_errors="true"}
 error("oops")
 ```
+
+```julia {cast="true" allow_errors="true"}
+julia> 1+1
+2
+
+julia> 3
+3
+
+```
