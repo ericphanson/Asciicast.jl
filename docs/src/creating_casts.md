@@ -13,9 +13,20 @@ cast"""
     """0.25
 ```
 
-The `Cast` objects have a `show` method defined for HTML, allowing rich display with a local [asciinema-player](https://github.com/asciinema/asciinema-player), in Documenter, Pluto, jupyter, etc. For convenient use with Documenter in particular, see the `@cast` syntax in [Documenter usage](@ref). Note that this player needs the asciinema-player javascript and CSS assets to be loaded.
+The `Cast` objects have a `show` method defined for HTML, allowing rich display with a local [asciinema-player](https://github.com/asciinema/asciinema-player), in Documenter, Pluto, jupyter, VSCode, etc. For convenient use with Documenter in particular, see the `@cast` syntax in [Documenter usage](@ref). Note that this player needs the asciinema-player javascript and CSS assets to be loaded (note that in VSCode, this happens automatically).
 
 They can be saved to a `.cast` file using [`Asciicast.save`](@ref) or saved to a gif using [`Asciicast.save_gif`](@ref). See also [Markdown usage](@ref) for easier integration into READMEs and other documents.
+
+Note also that `julia>` prompts may be prepended. In this case, existing outputs will be discarded, similarly to the REPL's prompt-pasting feature:
+
+```@example
+using Asciicast
+c = cast"""
+       julia> 1+1
+       3 # note: wrong!
+
+       """0.25
+```
 
 ```@docs
 @cast_str
