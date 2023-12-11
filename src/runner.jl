@@ -29,7 +29,7 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
     # "parse" keyword arguments to repl
     ansicolor = _any_color_fmt(doc)
     hide_inputs = false
-    allow_errors = true
+    allow_errors = false
     delay = 0.25
     height = nothing
     loop = false
@@ -139,7 +139,7 @@ function Base.showerror(io::IO, c::CastExecutionException)
         """)
 end
 
-function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(), page=FakePage(), ansicolor=true, mod=Module(), multicodeblock=MarkdownAST.CodeBlock[], allow_errors=true, x=nothing)
+function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(), page=FakePage(), ansicolor=true, mod=Module(), multicodeblock=MarkdownAST.CodeBlock[], allow_errors=false, x=nothing)
     linenumbernode = LineNumberNode(0, "REPL") # line unused, set to 0
     @debug "Evaluating @cast:\n$(x.code)"
 
@@ -214,7 +214,7 @@ end
 
 
 """
-    @cast_str(code_string, delay=0) -> Cast
+    @cast_str(code_string, delay=0, allow_errors=false) -> Cast
 
 Creates a [`Cast`](@ref) object by executing the code in `code_string` in a REPL-like environment.
 
@@ -228,12 +228,19 @@ c = cast"x=1"0.25 # note we set a delay of 0.25 here
 Asciicast.save("test.cast", c)
 ```
 
+To allow exceptions, one needs to invoke the macro manually on a string:
+
+```julia
+using Asciicast
+c = @cast_str("error()", 0, true)
+Asciicast.save("test.cast", c)
+```
 """
-macro cast_str(code_string, delay=0)
-    return _cast_str(code_string, delay)
+macro cast_str(code_string, delay=0, allow_errors=false)
+    return _cast_str(code_string, delay; allow_errors)
 end
 
-function _cast_str(code_string, delay=0; height=nothing, allow_errors=true)
+function _cast_str(code_string, delay=0; height=nothing, allow_errors=false)
     n_lines = length(split(code_string))
     height = something(height, min(n_lines * 2, 24)) # try to choose the number of lines more appropriately
     cast = Cast(IOBuffer(), Header(; height); delay=delay)

@@ -117,11 +117,12 @@ end
 @testset "markdown parsing" begin
     tmp = mktempdir()
     output = joinpath(tmp, "output.md")
-    # Check that we can parse both blocks and produce the gif tags.
-    @test cast_document("test_doc.md", output) == 2
+    # Check that we can parse these blocks and produce the gif tags.
+    @test cast_document("test_doc.md", output) == 3
     str = read(output, String)
     @test contains(str, "output_1_@cast.gif")
     @test contains(str, "output_2_@cast.gif")
+    @test contains(str, "output_3_@cast.gif")
 end
 
 @testset "markdown errors" begin

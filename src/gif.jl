@@ -1,9 +1,9 @@
 """
-    save_code_gif(output_path, code_string; delay=0.25, font_size=28, height=nothing, allow_errors=true)
+    save_code_gif(output_path, code_string; delay=0.25, font_size=28, height=nothing, allow_errors=false)
 
 Given Julia source code as a string, run the code in a REPL mode and save the results as a gif to `output_path`.
 """
-function save_code_gif(output_path, code_string; delay=0.25, font_size=28, height=nothing, allow_errors=true)
+function save_code_gif(output_path, code_string; delay=0.25, font_size=28, height=nothing, allow_errors=false)
     cast = _cast_str(code_string, delay; height, allow_errors)
     save_gif(output_path, cast::Cast; font_size)
     return output_path
@@ -51,7 +51,7 @@ function cast_action(tag, content, format, meta; base_dir, counter)
     font_size = get_attribute(attributes, "font-size", 28)
     delay = get_attribute(attributes, "delay", 0.25)
     height = get_attribute(attributes, "height", 0)
-    allow_errors = get_attribute(attributes, "allow_errors", true)
+    allow_errors = get_attribute(attributes, "allow_errors", false)
     if height == 0
         height = nothing
     end
