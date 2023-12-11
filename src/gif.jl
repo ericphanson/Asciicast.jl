@@ -26,6 +26,7 @@ function save_gif(output_path, cast::Cast; font_size=28, cast_path=nothing)
             f()
         end
     else
+        input_path = cast_path
         save(cast_path, cast)
         f()
     end

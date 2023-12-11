@@ -75,4 +75,5 @@ Additionally, I use `@cast` in the output filename, so that future runs can iden
 ```@docs
 Asciicast.cast_readme
 Asciicast.cast_document
+Asciicast.verify_casts
 ```
