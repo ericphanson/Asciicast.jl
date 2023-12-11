@@ -79,6 +79,20 @@ end
         @test issorted(event.time for event in events)
         @test events[1].type == InputEvent
         @test strip(events[1].event_data) == "@info \"Hello!\""
+
+        # We can also test the `write_event!` pathway with `Event` objects.
+        # This also checks we can roundtrip effectively.
+        io2 = IOBuffer()
+        cast2 = Cast(io2, header)
+        for event in events
+            write_event!(cast2, event)
+        end
+        seekstart(io2)
+        header2, events2 = parse_cast(io2)
+        for property in propertynames(header)
+            @test getproperty(header, property) == getproperty(header2, property)
+        end
+        @test events == events2
     end
 end
 

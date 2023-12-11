@@ -59,6 +59,32 @@ An enum consisting of `Asciicast.OutputEvent` and `Asciicast.InputEvent`.
 """
 @enum EventType OutputEvent InputEvent
 
+"""
+    struct Event
+        time::Float64
+        type::EventType
+        event_data::String
+    end
+
+Represents an event in a cast file. See also [`EventType`](@ref).
+"""
+struct Event
+    time::Float64
+    type::EventType
+    event_data::String
+end
+
+function Event(t::Number, type::AbstractString, event_data::AbstractString)
+    event_type = if type == "i"
+        InputEvent
+    elseif type == "o"
+        OutputEvent
+    else
+        error("Unexpected event type $type")
+    end
+    return Event(t, event_type, event_data)
+end
+
 # Some methods inspired by ArgTools.jl to try to be
 # agnostic to IO handles or files.
 # We can't use ArgTools itself because we need to be
@@ -145,20 +171,26 @@ Writes the contents of a [`Cast`](@ref) `cast` to `output`.
 save(output, cast::Cast) = write(output, collect_bytes(cast))
 
 """
-    write_event!(cast::Cast, event_type::EventType, event_data::AbstractString) -> time_since_start
+    write_event!(cast::Cast, event_type::EventType, event_data::AbstractString)
+    write_event!(cast::Cast, event::Event)
 
 Write an event to `cast` of type `event_type` (either `OutputEvent` or `InputEvent`) with data given by `event_data`.
 """
 function write_event!(cast::Cast, event_type::EventType, event_data::AbstractString)
-    t = time() - cast.start_time
+    event = Event(time() - cast.start_time, event_type, event_data)
+    return write_event!(cast::Cast, event)
+end
+
+function write_event!(cast::Cast, event::Event)
     write_append!(cast.write_handle) do io
         # asciinema's player seems to require `\r\n` instead of just `\n`
-        event_data = replace(event_data, "\n" => "\r\n")
-        JSON3.write(io, (t + cast.delay*cast.events_written[], event_type == OutputEvent ? "o" : "i", event_data))
+        # regex help: https://stackoverflow.com/a/32704
+        event_data = replace(event.event_data, r"(?<!\r)\n" => "\r\n")
+        JSON3.write(io, (event.time + cast.delay*cast.events_written[], event.type == OutputEvent ? "o" : "i", event_data))
         write(io, "\r\n")
     end
     cast.events_written[] += 1
-    return t
+    return event.time
 end
 
 include("capture.jl")
@@ -188,32 +220,6 @@ function record_output(f, io::IO=IOBuffer(), start_time::Float64=time(); delay=0
     cast = Cast(io, Header(; kw...), start_time; delay=delay)
     capture(f, cast; color = true)
     return cast
-end
-
-"""
-    struct Event
-        time::Float64
-        type::EventType
-        event_data::String
-    end
-
-Represents an event in a cast file. See also [`EventType`](@ref).
-"""
-struct Event
-    time::Float64
-    type::EventType
-    event_data::String
-end
-
-function Event(t::Number, type::AbstractString, event_data::AbstractString)
-    event_type = if type == "i"
-        InputEvent
-    elseif type == "o"
-        OutputEvent
-    else
-        error("Unexpected event type $type")
-    end
-    return Event(t, event_type, event_data)
 end
 
 """
