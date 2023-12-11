@@ -3,9 +3,9 @@
 
 Given Julia source code as a string, run the code in a REPL mode and save the results as a gif to `output_path`.
 """
-function save_code_gif(output_path, code_string; delay=0.25, font_size=28, height=nothing, allow_errors=false)
+function save_code_gif(output_path, code_string; delay=0.25, font_size=28, height=nothing, allow_errors=false, cast_path=nothing)
     cast = _cast_str(code_string, delay; height, allow_errors)
-    save_gif(output_path, cast::Cast; font_size)
+    save_gif(output_path, cast::Cast; font_size, cast_path)
     return output_path
 end
 
@@ -14,13 +14,20 @@ end
 
 Saves the [`Cast`](@ref) to `output_path` as a gif (using [`agg`](https://github.com/asciinema/agg)).
 """
-function save_gif(output_path, cast::Cast; font_size=28)
-    mktempdir() do tmp
-        input_path = joinpath(tmp, "input.cast")
-        save(input_path, cast)
-        # Larger font size to reduce blurriness:
-        # https://github.com/asciinema/agg/issues/60#issuecomment-1807910643
-        run(pipeline(`$(agg()) --font-size $(font_size) $input_path $output_path`; stdout=devnull, stderr=devnull))
+function save_gif(output_path, cast::Cast; font_size=28, cast_path=nothing)
+    local input_path
+     # Larger font size to reduce blurriness:
+    # https://github.com/asciinema/agg/issues/60#issuecomment-1807910643
+    f = () -> run(pipeline(`$(agg()) --font-size $(font_size) $input_path $output_path`; stdout=devnull, stderr=devnull))
+    if isnothing(cast_path)
+        mktempdir() do tmp
+            input_path = joinpath(tmp, "input.cast")
+            save(input_path, cast)
+            f()
+        end
+    else
+        save(cast_path, cast)
+        f()
     end
     return output_path
 end
