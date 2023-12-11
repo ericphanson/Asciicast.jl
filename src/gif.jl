@@ -47,7 +47,7 @@ function get_attribute(attributes, key, default)
 end
 
 # Pandoc filter to add gifs with the contents of `julia {cast="true"}` code blocks.
-function cast_action(tag, content, format, meta; base_dir, counter)
+function cast_action(tag, content, format, meta; base_dir, counter, save_casts)
     tag == "CodeBlock" || return nothing
     length(content) < 2 && return nothing
     length(content[1]) < 3 && return nothing
@@ -65,9 +65,14 @@ function cast_action(tag, content, format, meta; base_dir, counter)
     block = content[2]
     counter[] += 1
     c = counter[]
-    name = "output_$(c)_@cast.gif"
-    rel_path = joinpath("assets", name)
-    save_code_gif(joinpath(base_dir, rel_path), block; delay, font_size, height, allow_errors)
+    name = "output_$(c)_@cast"
+    rel_path = joinpath("assets", name * ".gif")
+    if save_casts
+        cast_path = joinpath(base_dir, "assets", name * ".cast")
+    else
+        cast_path = nothing
+    end
+    save_code_gif(joinpath(base_dir, rel_path), block; delay, font_size, height, allow_errors, cast_path)
     return [
         Pandoc.CodeBlock(content...)
         Pandoc.Para([Pandoc.Image(["", [], []], [], [rel_path, ""])])
@@ -84,22 +89,26 @@ function rm_old_gif(tag, content, format, meta)
 end
 
 """
-    cast_readme(MyPackage::Module)
-    cast_readme(MyPackage::Module, output_path)
+    cast_readme(MyPackage::Module; kw...)
+    cast_readme(MyPackage::Module, output_path; kw...)
 
 Add gifs for each `julia {cast="true"}` code-block in the README of MyPackage. This is just a smaller helper that calls [`cast_document`](@ref) on `joinpath(pkgdir(MyPackage), "README.md")`.
-See [`cast_document`](@ref) for more options and warnings.
+
+See [`cast_document`](@ref) for keyword arguments and warnings.
 """
-cast_readme(mod::Module) = cast_document(joinpath(pkgdir(mod), "README.md"))
-cast_readme(mod::Module, output_path) = cast_document(joinpath(pkgdir(mod), "README.md"), output_path)
+cast_readme
+
+cast_readme(mod::Module; kw...) = cast_document(joinpath(pkgdir(mod), "README.md"); kw...)
+cast_readme(mod::Module, output_path; kw...) = cast_document(joinpath(pkgdir(mod), "README.md"), output_path; kw...)
 
 """
-    cast_document(input_path, output_path=input_path; format="gfm+attributes")
+    cast_document(input_path, output_path=input_path; format="gfm+attributes", save_casts=true)
 
 For each `julia {cast="true"}` code-block in the input document, generates a gif
 executing that code in a REPL, saves it to `joinpath(dirname(output_path), "assets")`
 and inserts it as an image following the code-block, writing the resulting document
-to `output_path`.
+to `output_path`. If `save_casts=true` (the default), then the `.cast` files are saved
+as well. This can be used in conjunction with [`verify_casts`](@ref) that can check a document to ensure it's casts are all present and up-to-date.
 
 The default `format` is Github-flavored markdown. Specify the `format` keyword argument to choose an alternate pandoc-supported format (see <https://pandoc.org/MANUAL.html#general-options>). This has only been tested with Github-flavored markdown, but theoretically should work with any pandoc format.
 
@@ -112,12 +121,12 @@ Returns the number of gifs generated.
     or specifying an `output_path` that is different from the input path, in order to assess
     the results.
 """
-function cast_document(input_path, output_path=input_path; format="gfm+attributes", hacky_fix=true)
+function cast_document(input_path, output_path=input_path; format="gfm+attributes", hacky_fix=true, save_casts=true)
     json = JSON3.read(read(`$(pandoc()) --wrap=preserve -f $format -t json $input_path`), Dict)
     base_dir = dirname(output_path)
     mkpath(joinpath(base_dir, "assets"))
     counter = Ref{Int}(0)
-    act = (args...) -> cast_action(args...; base_dir, counter)
+    act = (args...) -> cast_action(args...; base_dir, counter, save_casts)
     output = JSON3.write(Pandoc.filter(json, [rm_old_gif, act]))
     open(`$(pandoc()) -f json -t $format --wrap=preserve --resource-path=$(base_dir) -o $output_path`; write=true) do io
         write(io, output)
@@ -131,4 +140,13 @@ function cast_document(input_path, output_path=input_path; format="gfm+attribute
         write(output_path, str)
     end
     return counter[]
+end
+
+"""
+    verify_casts(file)
+
+"""
+function verify_casts(file)
+
+
 end
