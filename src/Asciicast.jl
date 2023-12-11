@@ -13,7 +13,7 @@ using pandoc_jll, agg_jll
 
 export Cast, OutputEvent, InputEvent, write_event!, record_output
 export cast_document, cast_readme
-export @cast_str
+export @cast_str, CastExecutionException
 
 const Object = Dict{String, String}
 
@@ -120,7 +120,11 @@ collect_bytes(cast::Cast) = collect_bytes(cast.write_handle)
 function Base.show(io::IO, mime::MIME"text/html", cast::Cast)
     base64_str = base64encode(collect_bytes(cast))
     name = uuid4()
+    # Note: the extra div with `margin` is me trying to make the asciinema player
+    # have a little space around it, so it looks better in documenter pages etc.
+    # I don't know what I'm doing; if this is bad, make a PR to improve it!
     html = HTML("""
+    <div style="margin: 20px">
     <div id="$(name)"></div>
     <script>
     AsciinemaPlayer.create(
@@ -128,6 +132,7 @@ function Base.show(io::IO, mime::MIME"text/html", cast::Cast)
     document.getElementById('$(name)'), {autoPlay: true, fit: false, loop: $(cast.loop)}
     );
     </script>
+    </div>
     """)
     return show(io, mime, html)
 end

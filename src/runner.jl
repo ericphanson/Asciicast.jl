@@ -123,6 +123,22 @@ Base.@kwdef struct FakePage
 end
 Documenter.locrepr(::FakePage) = nothing
 
+struct CastExecutionException <: Exception
+    code::String
+    error::String
+end
+
+function Base.showerror(io::IO, c::CastExecutionException)
+    print(io,
+        """
+        CastExecutionException: Failed to run `cast` block:
+        ```
+        $(c.code)
+        ```
+        $(c.error)
+        """)
+end
+
 function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(), page=FakePage(), ansicolor=true, mod=Module(), multicodeblock=MarkdownAST.CodeBlock[], allow_errors=true, x=nothing)
     linenumbernode = LineNumberNode(0, "REPL") # line unused, set to 0
     @debug "Evaluating @cast:\n$(x.code)"
@@ -156,19 +172,21 @@ function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(
             Documenter.result_to_string(buffer, hide ? nothing : c.value)
         elseif allow_errors
             Documenter.error_to_string(buffer, c.value, [])
-        else
+        elseif !isnothing(x)
             lines = Documenter.find_block_in_file(x.code, page.source)
             bt = Documenter.remove_common_backtrace(c.backtrace)
             # we pretend to be an `example_block`, since it doesn't seem great
             # to mutate Documenter's global list of error types before parse time
             Documenter.@docerror(doc, :example_block,
-            """
-            failed to run `@cast` block in $(Documenter.locrepr(page.source, lines))
-            ```$(x.info)
-            $(x.code)
-            ```
-            """, exception = (c.value, bt))
+                """
+                failed to run `@cast` block in $(Documenter.locrepr(page.source, lines))
+                ```$(x.info)
+                $(x.code)
+                ```
+                """, exception = (c.value, bt))
             return
+        else
+            throw(CastExecutionException(code_string, Documenter.error_to_string(buffer, c.value, [])))
         end
 
         out = IOBuffer()
@@ -215,10 +233,10 @@ macro cast_str(code_string, delay=0)
     return _cast_str(code_string, delay)
 end
 
-function _cast_str(code_string, delay=0)
+function _cast_str(code_string, delay=0; height=nothing, allow_errors=true)
     n_lines = length(split(code_string))
-    height = min(n_lines * 2, 24) # try to choose the number of lines more appropriately
+    height = something(height, min(n_lines * 2, 24)) # try to choose the number of lines more appropriately
     cast = Cast(IOBuffer(), Header(; height); delay=delay)
-    cast_from_string!(code_string, cast)
+    cast_from_string!(code_string, cast; allow_errors)
     return cast
 end

@@ -1,10 +1,10 @@
 """
-    save_code_gif(output_path, code_string; delay=0.25, font_size=28)
+    save_code_gif(output_path, code_string; delay=0.25, font_size=28, height=nothing, allow_errors=true)
 
 Given Julia source code as a string, run the code in a REPL mode and save the results as a gif to `output_path`.
 """
-function save_code_gif(output_path, code_string; delay=0.25, font_size=28)
-    cast = _cast_str(code_string, delay)
+function save_code_gif(output_path, code_string; delay=0.25, font_size=28, height=nothing, allow_errors=true)
+    cast = _cast_str(code_string, delay; height, allow_errors)
     save_gif(output_path, cast::Cast; font_size)
     return output_path
 end
@@ -39,21 +39,28 @@ function get_attribute(attributes, key, default)
     return value
 end
 
-
 # Pandoc filter to add gifs with the contents of `julia {cast="true"}` code blocks.
 function cast_action(tag, content, format, meta; base_dir, counter)
     tag == "CodeBlock" || return nothing
+    length(content) < 2 && return nothing
+    length(content[1]) < 3 && return nothing
+    isempty(content[1][2]) && return nothing
     content[1][2][1] == "julia" || return nothing
     attributes = content[1][3]
     ["cast", "true"] in attributes || return nothing
     font_size = get_attribute(attributes, "font-size", 28)
     delay = get_attribute(attributes, "delay", 0.25)
+    height = get_attribute(attributes, "height", 0)
+    allow_errors = get_attribute(attributes, "allow_errors", true)
+    if height == 0
+        height = nothing
+    end
     block = content[2]
     counter[] += 1
     c = counter[]
     name = "output_$(c)_@cast.gif"
     rel_path = joinpath("assets", name)
-    save_code_gif(joinpath(base_dir, rel_path), block; delay, font_size)
+    save_code_gif(joinpath(base_dir, rel_path), block; delay, font_size, height, allow_errors)
     return [
         Pandoc.CodeBlock(content...)
         Pandoc.Para([Pandoc.Image(["", [], []], [], [rel_path, ""])])
@@ -99,13 +106,13 @@ Returns the number of gifs generated.
     the results.
 """
 function cast_document(input_path, output_path=input_path; format="gfm+attributes", hacky_fix=true)
-    json = JSON3.read(read(`$(pandoc()) -f $format -t json $input_path`), Dict)
+    json = JSON3.read(read(`$(pandoc()) --wrap=preserve -f $format -t json $input_path`), Dict)
     base_dir = dirname(output_path)
     mkpath(joinpath(base_dir, "assets"))
     counter = Ref{Int}(0)
     act = (args...) -> cast_action(args...; base_dir, counter)
     output = JSON3.write(Pandoc.filter(json, [rm_old_gif, act]))
-    open(`$(pandoc()) -f json -t $format --resource-path=$(base_dir) -o $output_path`; write=true) do io
+    open(`$(pandoc()) -f json -t $format --wrap=preserve --resource-path=$(base_dir) -o $output_path`; write=true) do io
         write(io, output)
     end
     if hacky_fix
@@ -113,7 +120,7 @@ function cast_document(input_path, output_path=input_path; format="gfm+attribute
         # on READMEs for "``` {.julia}", although VSCode does.
         # I also think ```julia is less ugly than ``` {.julia}.
         str = read(output_path, String)
-        str = replace(str, r"^``` {.julia "m => "```julia {")
+        str = replace(str, r"^``` {.julia "m => "```julia {", r"^``` julia"m => "```julia")
         write(output_path, str)
     end
     return counter[]
