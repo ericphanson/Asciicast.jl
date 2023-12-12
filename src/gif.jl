@@ -153,6 +153,8 @@ end
 
 """
 function verify_casts(file)
-
-
+    # Strategy- same as execution, except instead of saving the cast, we check it against the existig one.
+    # How to deal w stale image links?
+    # Maybe keep track of all the ones we generate, then check that list against all the ones that exist,
+    # without necessarily checking they are directly after their associated blocks
 end
