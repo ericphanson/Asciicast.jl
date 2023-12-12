@@ -38,6 +38,10 @@ This is an [agg](https://github.com/asciinema/agg#emoji) limitation[^1]. Current
 
 [^1]: In fact, this is an [even further upstream issue](https://github.com/asciinema/agg/issues/28#issuecomment-1490383327) in the renderers used by `agg`.
 
+### `cast_document` effectively reformats the document
+
+`pandoc` is not a source-precise markdown parser, and ignores "syntax trivia" like whitespace and so forth in its internal representation of the document. This means when it writes out the document after processing, it changes the whitespace, some newlines, and things like that. The rendered output should generally not change, but the file itself can change quite a bit.
+
 ## Non-limitations
 
 ### ANSI escape codes work properly
