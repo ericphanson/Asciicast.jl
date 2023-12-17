@@ -3,7 +3,7 @@
 
 Given Julia source code as a string, run the code in a REPL mode and save the results as a gif to `output_path`.
 """
-function save_code_gif(output_path, code_string; delay=0.25, font_size=28, height=nothing, allow_errors=false, mod=Module())
+function save_code_gif(output_path, code_string; delay=0.25, font_size=28, height=nothing, allow_errors=false, mod=get_module())
     cast = _cast_str(code_string, delay; height, allow_errors, mod)
     save_gif(output_path, cast::Cast; font_size)
     return output_path

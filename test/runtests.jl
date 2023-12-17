@@ -94,58 +94,65 @@ end
         end
         @test events == events2
     end
+
+
+    @testset "README updated" begin
+        # Test that the README functionality works, and the README is up-to-date:
+        tmp = mktempdir()
+        output = joinpath(tmp, "output.md")
+        cast_readme(Asciicast, output)
+        existing_readme = read(joinpath(pkgdir(Asciicast), "README.md"), String)
+        updated_readme = read(output, String)
+        if !Sys.iswindows() # skip windows bc backslashes change etc
+            # If this fails, you can just update the README with `Asciicast.cast_readme(Asciicast)`.
+            @test existing_readme == updated_readme
+        end
+    end
+
+    @testset "markdown parsing" begin
+        tmp = mktempdir()
+        output = joinpath(tmp, "output.md")
+        # Check that we can parse these blocks and produce the gif tags.
+        n = 6
+        @test cast_document("test_doc.md", output) == n
+        str = read(output, String)
+        for i in 1:n
+            @test contains(str, "output_$(i)_@cast.gif")
+        end
+    end
+
+    @testset "markdown errors" begin
+        tmp = mktempdir()
+        output = joinpath(tmp, "output.md")
+        @test_throws CastExecutionException cast_document("bad.md", output)
+    end
+
+    @testset "`Cast` show methods" begin
+        c = cast"""
+           julia> 1+1
+           2
+
+           julia> 3
+           3
+           """0.25
+        vscode_str = sprint(show, MIME"juliavscode/html"(), c)
+        # Contains the JS and css:
+        @test contains(vscode_str, "asciinema-player.min.js")
+        @test contains(vscode_str, "asciinema-player.min.css")
+        @test contains(vscode_str, "AsciinemaPlayer.create")
+
+        html_str = sprint(show, MIME"text/html"(), c)
+        @test contains(html_str, "AsciinemaPlayer.create")
+    end
+
+    @testset "`include` defined" begin
+        c = cast"""include("test_file.jl")"""
+        @test c isa Cast
+    end
 end
+
 
 # Test that the docs build:
 @testset "Docs build" begin
     include(joinpath(pkgdir(Asciicast), "docs", "_make.jl"))
-end
-
-@testset "README updated" begin
-    # Test that the README functionality works, and the README is up-to-date:
-    tmp = mktempdir()
-    output = joinpath(tmp, "output.md")
-    cast_readme(Asciicast, output)
-    existing_readme = read(joinpath(pkgdir(Asciicast), "README.md"), String)
-    updated_readme = read(output, String)
-    if !Sys.iswindows() # skip windows bc backslashes change etc
-        # If this fails, you can just update the README with `Asciicast.cast_readme(Asciicast)`.
-        @test existing_readme == updated_readme
-    end
-end
-
-@testset "markdown parsing" begin
-    tmp = mktempdir()
-    output = joinpath(tmp, "output.md")
-    # Check that we can parse these blocks and produce the gif tags.
-    n = 6
-    @test cast_document("test_doc.md", output) == n
-    str = read(output, String)
-    for i in 1:n
-        @test contains(str, "output_$(i)_@cast.gif")
-    end
-end
-
-@testset "markdown errors" begin
-    tmp = mktempdir()
-    output = joinpath(tmp, "output.md")
-    @test_throws CastExecutionException cast_document("bad.md", output)
-end
-
-@testset "`Cast` show methods" begin
-    c = cast"""
-       julia> 1+1
-       2
-
-       julia> 3
-       3
-       """0.25
-    vscode_str = sprint(show, MIME"juliavscode/html"(), c)
-    # Contains the JS and css:
-    @test contains(vscode_str, "asciinema-player.min.js")
-    @test contains(vscode_str, "asciinema-player.min.css")
-    @test contains(vscode_str, "AsciinemaPlayer.create")
-
-    html_str = sprint(show, MIME"text/html"(), c)
-    @test contains(html_str, "AsciinemaPlayer.create")
 end

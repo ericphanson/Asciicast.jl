@@ -139,7 +139,7 @@ function Base.showerror(io::IO, c::CastExecutionException)
         """)
 end
 
-function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(), page=FakePage(), ansicolor=true, mod=Module(), multicodeblock=MarkdownAST.CodeBlock[], allow_errors=false, x=nothing, remove_prompt=false)
+function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(), page=FakePage(), ansicolor=true, mod=get_module(), multicodeblock=MarkdownAST.CodeBlock[], allow_errors=false, x=nothing, remove_prompt=false)
     linenumbernode = LineNumberNode(0, "REPL") # line unused, set to 0
     @debug "Evaluating @cast:\n$(x.code)"
 
@@ -255,10 +255,16 @@ macro cast_str(code_string, delay=0, allow_errors=false)
     return _cast_str(code_string, delay; allow_errors)
 end
 
-function _cast_str(code_string, delay=0; height=nothing, allow_errors=false, mod=Module())
+function _cast_str(code_string, delay=0; height=nothing, allow_errors=false, mod=get_module())
     n_lines = length(split(code_string))
     height = something(height, min(n_lines * 2, 24)) # try to choose the number of lines more appropriately
     cast = Cast(IOBuffer(), Header(; height); delay=delay)
     cast_from_string!(code_string, cast; allow_errors, remove_prompt=true, mod)
     return cast
+end
+
+# Helper to get a module using `get_sandbox_module!` so that things like
+# `include` are defined. Xref https://github.com/ericphanson/Asciicast.jl/issues/32
+function get_module()
+    return Documenter.get_sandbox_module!(Dict(), "", nothing)
 end
