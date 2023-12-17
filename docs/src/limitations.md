@@ -42,6 +42,10 @@ This is an [agg](https://github.com/asciinema/agg#emoji) limitation[^1]. Current
 
 `pandoc` is not a source-precise markdown parser, and ignores "syntax trivia" like whitespace and so forth in its internal representation of the document. This means when it writes out the document after processing, it changes the whitespace, some newlines, and things like that. The rendered output should generally not change, but the file itself can change quite a bit.
 
+### `cast""` blocks require everything to be defined within the block
+
+Unlike Documenter `@cast` blocks, or markdown `julia {cast="true"}` blocks, which support defining items in one block and reusing those definitions in the next, [`@cast_str`](@ref) requires everything to be defined within the block. That is because we do not have an easy way to pass around the module with which the code is executed within. We could just execute the code in whatever module the `@cast_str` macro is being evaluated in (often `Main`), but then that module's state would be updated by the contents of the block (including globals, function definitions, etc), which may be unexpected. Instead we require these blocks to be self-contained. They do support `using` and `include` however, facilitating code-reuse.
+
 ## Non-limitations
 
 ### ANSI escape codes work properly
