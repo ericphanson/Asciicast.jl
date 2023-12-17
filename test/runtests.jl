@@ -145,6 +145,7 @@ end
         @test contains(html_str, "AsciinemaPlayer.create")
     end
 
+    # https://github.com/ericphanson/Asciicast.jl/issues/32
     @testset "`include` defined" begin
         c = cast"""include("test_file.jl")"""
         @test c isa Cast
