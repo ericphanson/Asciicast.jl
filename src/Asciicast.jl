@@ -153,7 +153,7 @@ function Base.show(io::IO, ::MIME"juliavscode/html", cast::Cast)
 end
 
 function show_html(io::IO, cast::Cast)
-        base64_str = base64encode(collect_bytes(cast))
+    base64_str = base64encode(collect_bytes(cast))
     name = uuid4()
     # Note: the extra div with `margin` is me trying to make the asciinema player
     # have a little space around it, so it looks better in documenter pages etc.
@@ -164,7 +164,7 @@ function show_html(io::IO, cast::Cast)
     <script>
     AsciinemaPlayer.create(
     'data:text/plain;base64,$(base64_str)',
-    document.getElementById('$(name)'), {autoPlay: true, fit: false, loop: $(cast.loop)}
+    document.getElementById('$(name)'), {autoPlay: true, fit: "width", loop: $(cast.loop)}
     );
     </script>
     </div>
