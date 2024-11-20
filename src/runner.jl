@@ -58,6 +58,12 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
             height = parse(Int, matched[1])
         end
 
+        # width
+        matched = match(r"\bwidth\s*=\s*([0-9]+)", kwargs)
+        if matched !== nothing
+            width = parse(Int, matched[1])
+        end
+
         # loop
         # bool:
         matched = match(r"\bloop\s*=\s*(true|false)\b", kwargs)
@@ -91,7 +97,8 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
 
     # If `height` isn't provided, we guess the number of lines:
     height = something(height, min(n_lines * 2, 24))
-    cast = Cast(IOBuffer(), Header(; height, idle_time_limit=1); delay, loop)
+    width = something(width, 80)
+    cast = Cast(IOBuffer(), Header(; height, width, idle_time_limit=1); delay, loop)
 
     cast_from_string!(x.code, cast; doc, page, ansicolor, mod, multicodeblock, allow_errors, x)
 
