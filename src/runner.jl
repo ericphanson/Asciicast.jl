@@ -62,6 +62,8 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
         matched = match(r"\bwidth\s*=\s*([0-9]+)", kwargs)
         if matched !== nothing
             width = parse(Int, matched[1])
+        else
+            width = nothing
         end
 
         # loop
