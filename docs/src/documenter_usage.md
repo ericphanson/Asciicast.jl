@@ -172,6 +172,30 @@ Delay of 1:
 3
 ```
 
+### Window size
+
+The size of the window can be set with `height` and `width`.
+
+````markdown
+```@cast
+println("="^80)
+```
+````
+
+```@cast; hide_inputs=true
+println("="^80)
+```
+
+````markdown
+```@cast; width=50, height=10
+println("="^80)
+```
+````
+
+```@cast; width=50, height=10, hide_inputs=true
+println("="^80)
+```
+
 ### All supported options in `@cast` Documenter blocks
 
 * `hide_inputs::Bool=false`. Whether or not to hide the `@repl`-style inputs before the animated gif.
@@ -179,6 +203,7 @@ Delay of 1:
 * `delay::Float64=0.25`. The amount of delay between line executions (to emulate typing time).
 * `loop::Union{Int,Bool}=false`. Set to `true` for infinite looping, or an integer to loop a fixed number of times.
 * `height::Int`. Heuristically determined by default. Set to an integer to specify the number of lines.
+* `width::Int`. Set to `80` by default. Set to an integer to specify the number of columns.
 
 ### Reference docs
 
