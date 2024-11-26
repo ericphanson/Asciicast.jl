@@ -32,6 +32,7 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
     allow_errors = false
     delay = 0.25
     height = nothing
+    width = nothing
     loop = false
     if kwargs !== nothing
         # ansicolor
