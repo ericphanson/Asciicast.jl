@@ -1,7 +1,7 @@
 name = "Asciicast"
 uuid = "2600d445-abca-43b9-92aa-ce144ac0b05b"
 authors = ["Eric Hanson <5846501+ericphanson@users.noreply.github.com> and contributors"]
-version = "0.1.1"
+version = "0.1.2"
 
 [deps]
 Base64 = "2a0f44e3-6c83-55bd-87e4-b1978d98bd5f"
