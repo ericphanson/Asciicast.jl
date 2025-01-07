@@ -156,6 +156,10 @@ end
         @test Asciicast.parse_float_int("delay", "delay=1, loop=true, loop_delay=4.5, hide_inputs=true") == 1.0
         @test Asciicast.parse_float_int("delay", "delay=1.0, loop=true, loop_delay=4.5, hide_inputs=true") == 1.0
         @test Asciicast.parse_float_int("delay", "delay=1.5, loop=true, loop_delay=4.5, hide_inputs=true") == 1.5
+        @test Asciicast.parse_float_int("delay",
+            "width=100, height=50, delay=0.1, loop=true, loop_delay=5") == 0.1
+        @test Asciicast.parse_float_int("loop_delay",
+            "width=100, height=50, delay=0.1, loop=true, loop_delay=5") == 5
     end
 end
 
