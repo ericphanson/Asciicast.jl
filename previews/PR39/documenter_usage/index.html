@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Documenter usage · Asciicast.jl</title><meta name="title" content="Documenter usage · Asciicast.jl"/><meta property="og:title" content="Documenter usage · Asciicast.jl"/><meta property="twitter:title" content="Documenter usage · Asciicast.jl"/><meta name="description" content="Documentation for Asciicast.jl."/><meta property="og:description" content="Documentation for Asciicast.jl."/><meta property="twitter:description" content="Documentation for Asciicast.jl."/><meta property="og:url" content="https://ericphanson.github.io/Asciicast.jl/documenter_usage/"/><meta property="twitter:url" content="https://ericphanson.github.io/Asciicast.jl/documenter_usage/"/><link rel="canonical" href="https://ericphanson.github.io/Asciicast.jl/documenter_usage/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><script src="https://cdn.jsdelivr.net/npm/asciinema-player@3.6.3/dist/bundle/asciinema-player.min.js"></script><link href="https://cdn.jsdelivr.net/npm/asciinema-player@3.6.3/dist/bundle/asciinema-player.min.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">Asciicast.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../creating_casts/">Creating casts</a></li><li class="is-active"><a class="tocitem" href>Documenter usage</a><ul class="internal"><li><a class="tocitem" href="#Documenter-usage"><span>Documenter usage</span></a></li></ul></li><li><a class="tocitem" href="../markdown_usage/">Markdown usage</a></li><li><a class="tocitem" href="../cast_files/">Cast files</a></li><li><a class="tocitem" href="../limitations/">Limitations</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Documenter usage</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Documenter usage</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/ericphanson/Asciicast.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/ericphanson/Asciicast.jl/blob/main/docs/src/documenter_usage.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h2 id="Documenter-usage"><a class="docs-heading-anchor" href="#Documenter-usage">Documenter usage</a><a id="Documenter-usage-1"></a><a class="docs-heading-anchor-permalink" href="#Documenter-usage" title="Permalink"></a></h2><p>To use Asciicast with documenter, the <a href="https://github.com/asciinema/asciinema-player">asciinema-player</a> javascript and CSS assets must be provided to Documenter in <code>makedocs</code> in your <code>docs/make.jl</code> file.</p><p>This can be done using the <a href="#Asciicast.assets"><code>Asciicast.assets</code></a> function, e.g.</p><pre><code class="language-julia hljs">makedocs(;
+    # ...
+    format=Documenter.HTML(;
+        assets=Asciicast.assets(),
+        # ...
+    ),
+)</code></pre><p>Besides that, the only other requirement is to load <code>Asciicast</code> in your <code>make.jl</code> (<code>using Asciicast</code>).</p><h3 id="@cast-blocks"><a class="docs-heading-anchor" href="#@cast-blocks"><code>@cast</code> blocks</a><a id="@cast-blocks-1"></a><a class="docs-heading-anchor-permalink" href="#@cast-blocks" title="Permalink"></a></h3><p>Asciicast.jl works as a Documenter plugin, providing <code>@cast</code> blocks which work similarly to <code>@repl</code> blocks. For example:</p><pre><code class="language-markdown hljs">```@cast
+using Pkg
+Pkg.status()
+1 + 1
+```</code></pre><p>The above <code>@cast</code> block will effectively generate both a standard Documenter <code>@repl</code> block:</p><pre><code class="language-markdown hljs">```@repl
+using Pkg
+Pkg.status()
+1 + 1
+```</code></pre><p>and some raw HTML output:</p><pre><code class="language-html hljs">&lt;div id=&quot;d59ee38d-184a-4888-8749-41b4df76ae3b&quot;&gt;&lt;/div&gt;
+&lt;script&gt;
+AsciinemaPlayer.create(
+&#39;data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6ODAsImhlaWdodCI6MTIsInRpbWVzdGFtcCI6MTcwMjE1ODMyMywiaWRsZV90aW1lX2xpbWl0IjoxLjAsImVudiI6eyJURVJNIjoieHRlcm0tMjU2Y29sb3IiLCJTSEVMTCI6Ii9iaW4venNoIn19ClswLjAwMTA5ODE1NTk3NTM0MTc5NjksImkiLCJ1c2luZyBQa2ciXQ0KWzAuNTAxMzQ1MTU3NjIzMjkxLCJvIiwianVsaWE+IHVzaW5nIFBrZ1xyXG4iXQ0KWzEuMDAyODIxMjA3MDQ2NTA4OCwibyIsIiJdDQpbMS41MDI5NzAyMTg2NTg0NDczLCJvIiwiXHJcbiJdDQpbMi4wMDI5NzQ5ODcwMzAwMjkzLCJpIiwiUGtnLnN0YXR1cygpIl0NClsyLjUwMjk3NjE3OTEyMjkyNSwibyIsImp1bGlhPiBQa2cuc3RhdHVzKClcclxuIl0NClszLjAxNTQ2MDAxNDM0MzI2MTcsIm8iLCJcdTAwMWJbMzJtXHUwMDFiWzFtU3RhdHVzXHUwMDFiWzIybVx1MDAxYlszOW0gIl0NClszLjUxNTUwNDEyMTc4MDM5NTUsIm8iLCJgfi9Bc2NpaWNhc3QuamwvZG9jcy9Qcm9qZWN0LnRvbWxgXHJcbiJdDQpbNC4wMTcxMTMyMDg3NzA3NTIsIm8iLCIgICJdDQpbNC41MTcxOTQwMzI2NjkwNjcsIm8iLCJcdTAwMWJbOTBtWzI2MDBkNDQ1XSBcdTAwMWJbMzltQXNjaWljYXN0IHYwLjEuMCBgLi5gIl0NCls1LjAxNzIzODE0MDEwNjIwMSwibyIsIlxyXG4gIl0NCls1LjUxNzI3NzAwMjMzNDU5NSwibyIsIiBcdTAwMWJbOTBtW2UzMDE3MmY1XSBcdTAwMWJbMzltIl0NCls2LjAxNzMxNTE0OTMwNzI1MSwibyIsIkRvY3VtZW50ZXIgdjEuMi4xXHJcbiJdDQpbNi41MTc3NzAwNTE5NTYxNzcsIm8iLCIiXQ0KWzcuMDE3OTI0MDcwMzU4Mjc2LCJvIiwiXHJcbiJdDQpbNy41MTc5MzIxNzY1ODk5NjYsImkiLCIxICsgMSJdDQpbOC4wMTc5MzMxMzAyNjQyODIsIm8iLCJqdWxpYT4gMSArIDFcclxuIl0NCls4LjUxODA5MzEwOTEzMDg2LCJvIiwiIl0NCls5LjAxODU5NDAyNjU2NTU1MiwibyIsIjJcclxuIl0NCg==&#39;,
+document.getElementById(&#39;d59ee38d-184a-4888-8749-41b4df76ae3b&#39;), { autoPlay: true, fit: false}
+);
+&lt;/script&gt;</code></pre><p>Here, the <code>id</code> is randomly generated with <code>uuid4()</code>, and the contents of the cast itself are base64-encoded and inlined into the HTML. Note: I initially tried saving these as separate files, but had trouble with casts not showing up on deployed pages, while inlining works reliably every time.</p><p>The output of this looks like:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using Pkg</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Pkg.status()</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; 1 + 1</code><code class="nohighlight hljs ansi" style="display:block;">2</code></pre><div style="margin: 20px">
+<div id="fc8c95cf-0b63-49c2-a31f-8b69b07b356e"></div>
+<script>
+AsciinemaPlayer.create(
+'data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6ODAsImhlaWdodCI6MTIsInRpbWVzdGFtcCI6MTczNjI0OTY5OSwiaWRsZV90aW1lX2xpbWl0IjoxLjAsImVudiI6eyJURVJNIjoieHRlcm0tMjU2Y29sb3IiLCJTSEVMTCI6Ii9iaW4vYmFzaCJ9fQpbMC4yMzI1MTE5OTcyMjI5MDA0LCJpIiwidXNpbmcgUGtnIl0NClswLjQ4MjUxNzk1NzY4NzM3NzkzLCJvIiwianVsaWE+IHVzaW5nIFBrZ1xyXG4iXQ0KWzAuNzY1NzQzOTcwODcwOTcxNywibyIsIiJdDQpbMS4wMTYwNzEwODExNjE0OTksIm8iLCJcclxuIl0NClsxLjI2NjA5MDE1NDY0NzgyNzEsImkiLCJQa2cuc3RhdHVzKCkiXQ0KWzEuNTE2MDkyMDYxOTk2NDYsIm8iLCJqdWxpYT4gUGtnLnN0YXR1cygpXHJcbiJdDQpbMS43NzkyMzc5ODU2MTA5NjIsIm8iLCJcdTAwMWJbMzJtXHUwMDFiWzFtU3RhdHVzXHUwMDFiWzIybVx1MDAxYlszOW0gIl0NClsyLjAyOTI3MzAzMzE0MjA5LCJvIiwiYH4vd29yay9Bc2NpaWNhc3QuamwvQXNjaWljYXN0LmpsL2RvY3MvUHJvamVjdC50b21sYFxyXG4iXQ0KWzIuMjc5NzQ2MDU1NjAzMDI3MywibyIsIiAgIl0NClsyLjUyOTc5OTkzODIwMTkwNDMsIm8iLCJcdTAwMWJbOTBtWzI2MDBkNDQ1XSBcdTAwMWJbMzltQXNjaWljYXN0IHYwLjEuMyBgfi93b3JrL0FzY2lpY2FzdC5qbC9Bc2NpaWNhc3QuamxgIl0NClsyLjc3OTgyNjE2NDI0NTYwNTUsIm8iLCJcclxuICJdDQpbMy4wMjk4NTUwMTI4OTM2NzY4LCJvIiwiIFx1MDAxYls5MG1bZTMwMTcyZjVdIFx1MDAxYlszOW0iXQ0KWzMuMjc5ODgwMDQ2ODQ0NDgyNCwibyIsIkRvY3VtZW50ZXIgdjEuOC4wXHJcbiJdDQpbMy41Mjk5MDQxMjcxMjA5NzE3LCJvIiwiICAiXQ0KWzMuNzc5OTMxMDY4NDIwNDEsIm8iLCJcdTAwMWJbOTBtWzkyOTMzZjRjXSBcdTAwMWJbMzltUHJvZ3Jlc3NNZXRlciB2MS4xMC4yIl0NCls0LjAyOTk1MTA5NTU4MTA1NSwibyIsIlxyXG4gIl0NCls0LjI3OTk3Mzk4Mzc2NDY0OCwibyIsIiBcdTAwMWJbOTBtWzQ0Y2ZlOTVhXSBcdTAwMWJbMzltIl0NCls0LjUyOTk5NzExMDM2NjgyMSwibyIsIlBrZyB2MS4xMS4wXHJcbiJdDQpbNC43ODAwNjY5NjcwMTA0OTgsIm8iLCIiXQ0KWzUuMDMwMzgzMTEwMDQ2Mzg3LCJvIiwiXHJcbiJdDQpbNS4yODAzOTgxMzA0MTY4NywiaSIsIjEgKyAxIl0NCls1LjUzMDQwMDAzNzc2NTUwMywibyIsImp1bGlhPiAxICsgMVxyXG4iXQ0KWzUuNzgwNjMyMDE5MDQyOTY5LCJvIiwiIl0NCls2LjAzMTM1ODAwMzYxNjMzMywibyIsIjJcclxuIl0NCg==',
+document.getElementById('fc8c95cf-0b63-49c2-a31f-8b69b07b356e'), {autoPlay: true, fit: "width", loop: false}
+);
+</script>
+</div>
+<h3 id="Hiding-REPL-inputs"><a class="docs-heading-anchor" href="#Hiding-REPL-inputs">Hiding REPL inputs</a><a id="Hiding-REPL-inputs-1"></a><a class="docs-heading-anchor-permalink" href="#Hiding-REPL-inputs" title="Permalink"></a></h3><p>You can also use <code>hide_inputs=true</code> to hide the inputs, showing just the asciinema player. The syntax for that is:</p><pre><code class="language-markdown hljs">```@cast; hide_inputs=true
+using Pkg
+Pkg.status()
+1 + 1
+```</code></pre><p>This looks like:</p><div style="margin: 20px">
+<div id="f79803f9-ab74-4f00-8923-dca493c35d11"></div>
+<script>
+AsciinemaPlayer.create(
+'data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6ODAsImhlaWdodCI6MTIsInRpbWVzdGFtcCI6MTczNjI0OTY5OSwiaWRsZV90aW1lX2xpbWl0IjoxLjAsImVudiI6eyJURVJNIjoieHRlcm0tMjU2Y29sb3IiLCJTSEVMTCI6Ii9iaW4vYmFzaCJ9fQpbMC4wMDAyMTY5NjA5MDY5ODI0MjE4OCwiaSIsInVzaW5nIFBrZyJdDQpbMC4yNTAyMjEwMTQwMjI4MjcxNSwibyIsImp1bGlhPiB1c2luZyBQa2dcclxuIl0NClswLjUwMDQzNzAyMTI1NTQ5MzIsIm8iLCIiXQ0KWzAuNzUwNzIwOTc3NzgzMjAzMSwibyIsIlxyXG4iXQ0KWzEuMDAwNzI4ODQ1NTk2MzEzNSwiaSIsIlBrZy5zdGF0dXMoKSJdDQpbMS4yNTA3MzAwMzc2ODkyMDksIm8iLCJqdWxpYT4gUGtnLnN0YXR1cygpXHJcbiJdDQpbMS41MDI0OTg4NjUxMjc1NjM1LCJvIiwiXHUwMDFiWzMybVx1MDAxYlsxbVN0YXR1c1x1MDAxYlsyMm1cdTAwMWJbMzltICJdDQpbMS43NTI1Mjc5NTIxOTQyMTM5LCJvIiwiYH4vd29yay9Bc2NpaWNhc3QuamwvQXNjaWljYXN0LmpsL2RvY3MvUHJvamVjdC50b21sYFxyXG4iXQ0KWzIuMDAyOTEzOTUxODczNzc5MywibyIsIiAgIl0NClsyLjI1Mjk2OTAyNjU2NTU1MTgsIm8iLCJcdTAwMWJbOTBtWzI2MDBkNDQ1XSBcdTAwMWJbMzltQXNjaWljYXN0IHYwLjEuMyBgfi93b3JrL0FzY2lpY2FzdC5qbC9Bc2NpaWNhc3QuamxgIl0NClsyLjUwMjk5NTAxNDE5MDY3NCwibyIsIlxyXG4gIl0NClsyLjc1MzAzMTk2OTA3MDQzNDYsIm8iLCIgXHUwMDFiWzkwbVtlMzAxNzJmNV0gXHUwMDFiWzM5bSJdDQpbMy4wMDMwNjk4Nzc2MjQ1MTE3LCJvIiwiRG9jdW1lbnRlciB2MS44LjBcclxuIl0NClszLjI1MzA5NzA1NzM0MjUyOTMsIm8iLCIgICJdDQpbMy41MDMxMzE4NjY0NTUwNzgsIm8iLCJcdTAwMWJbOTBtWzkyOTMzZjRjXSBcdTAwMWJbMzltUHJvZ3Jlc3NNZXRlciB2MS4xMC4yIl0NClszLjc1MzE2MTkwNzE5NjA0NSwibyIsIlxyXG4gIl0NCls0LjAwMzIxMTAyMTQyMzM0LCJvIiwiIFx1MDAxYls5MG1bNDRjZmU5NWFdIFx1MDAxYlszOW0iXQ0KWzQuMjUzMjQzOTIzMTg3MjU2LCJvIiwiUGtnIHYxLjExLjBcclxuIl0NCls0LjUwMzMwNDk1ODM0MzUwNiwibyIsIiJdDQpbNC43NTM1MjM4MjY1OTkxMjEsIm8iLCJcclxuIl0NCls1LjAwMzUzMTkzMjgzMDgxMDUsImkiLCIxICsgMSJdDQpbNS4yNTM1MzM4NDAxNzk0NDMsIm8iLCJqdWxpYT4gMSArIDFcclxuIl0NCls1LjUwMzcxMzg0NjIwNjY2NSwibyIsIiJdDQpbNS43NTM5MjQ4NDY2NDkxNywibyIsIjJcclxuIl0NCg==',
+document.getElementById('f79803f9-ab74-4f00-8923-dca493c35d11'), {autoPlay: true, fit: "width", loop: false}
+);
+</script>
+</div>
+<h3 id="Exceptions"><a class="docs-heading-anchor" href="#Exceptions">Exceptions</a><a id="Exceptions-1"></a><a class="docs-heading-anchor-permalink" href="#Exceptions" title="Permalink"></a></h3><p>Unlike in <code>@repl</code> blocks, exceptions are not allowed by default. Instead, they must be opt-ed in with <code>allow_errors=true</code></p><pre><code class="language-markdown hljs">```@cast; allow_errors=true
+error(&quot;This is an exception!&quot;)
+```</code></pre><p>This looks like:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; error(&quot;This is an exception!&quot;)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: This is an exception!</code></pre><div style="margin: 20px">
+<div id="13e01b49-0443-4fbc-88ca-acc59ff39740"></div>
+<script>
+AsciinemaPlayer.create(
+'data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6ODAsImhlaWdodCI6OCwidGltZXN0YW1wIjoxNzM2MjQ5Njk5LCJpZGxlX3RpbWVfbGltaXQiOjEuMCwiZW52Ijp7IlRFUk0iOiJ4dGVybS0yNTZjb2xvciIsIlNIRUxMIjoiL2Jpbi9iYXNoIn19Cls4LjI5Njk2NjU1MjczNDM3NWUtNSwiaSIsImVycm9yKFwiVGhpcyBpcyBhbiBleGNlcHRpb24hXCIpIl0NClswLjI1MDA4NTgzMDY4ODQ3NjU2LCJvIiwianVsaWE+IGVycm9yKFwiVGhpcyBpcyBhbiBleGNlcHRpb24hXCIpXHJcbiJdDQpbMC41MDE2NDU4MDM0NTE1MzgxLCJvIiwiIl0NClsxLjM3NTc2MDc5MzY4NTkxMywibyIsIkVSUk9SOiBUaGlzIGlzIGFuIGV4Y2VwdGlvbiFcclxuIl0NCg==',
+document.getElementById('13e01b49-0443-4fbc-88ca-acc59ff39740'), {autoPlay: true, fit: "width", loop: false}
+);
+</script>
+</div>
+<h3 id="Example-with-a-named-block"><a class="docs-heading-anchor" href="#Example-with-a-named-block">Example with a named block</a><a id="Example-with-a-named-block-1"></a><a class="docs-heading-anchor-permalink" href="#Example-with-a-named-block" title="Permalink"></a></h3><p>First block:</p><pre><code class="language-markdown hljs">```@cast 1; hide_inputs=true
+x = -1
+x*x
+```</code></pre><div style="margin: 20px">
+<div id="e375ed7c-e4c0-4d8d-be45-84cc044b54c1"></div>
+<script>
+AsciinemaPlayer.create(
+'data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6ODAsImhlaWdodCI6OCwidGltZXN0YW1wIjoxNzM2MjQ5NzAwLCJpZGxlX3RpbWVfbGltaXQiOjEuMCwiZW52Ijp7IlRFUk0iOiJ4dGVybS0yNTZjb2xvciIsIlNIRUxMIjoiL2Jpbi9iYXNoIn19ClswLjAwMDE1MzA2NDcyNzc4MzIwMzEyLCJpIiwieCA9IC0xIl0NClswLjI1MDE1NzExNzg0MzYyNzkzLCJvIiwianVsaWE+IHggPSAtMVxyXG4iXQ0KWzAuNTAwNDc1MTY4MjI4MTQ5NCwibyIsIiJdDQpbMC43NTA2OTQwMzY0ODM3NjQ2LCJvIiwiLTFcclxuXHJcbiJdDQpbMS4wMDA3MDIxNDI3MTU0NTQsImkiLCJ4KngiXQ0KWzEuMjUwNzAzMDk2Mzg5NzcwNSwibyIsImp1bGlhPiB4KnhcclxuIl0NClsxLjUwMDkwNzE4MjY5MzQ4MTQsIm8iLCIiXQ0KWzEuNzUxMTExMDMwNTc4NjEzMywibyIsIjFcclxuIl0NCg==',
+document.getElementById('e375ed7c-e4c0-4d8d-be45-84cc044b54c1'), {autoPlay: true, fit: "width", loop: false}
+);
+</script>
+</div>
+<p>The next block continues:</p><pre><code class="language-markdown hljs">```@cast 1; hide_inputs=true, allow_errors=true
+y = x+1
+sqrt(x)
+```</code></pre><div style="margin: 20px">
+<div id="b97a9a05-9f8a-4995-b0a8-d55e57c4903c"></div>
+<script>
+AsciinemaPlayer.create(
+'data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6ODAsImhlaWdodCI6OCwidGltZXN0YW1wIjoxNzM2MjQ5NzAwLCJpZGxlX3RpbWVfbGltaXQiOjEuMCwiZW52Ijp7IlRFUk0iOiJ4dGVybS0yNTZjb2xvciIsIlNIRUxMIjoiL2Jpbi9iYXNoIn19Cls5LjM5MzY5MjAxNjYwMTU2MmUtNSwiaSIsInkgPSB4KzEiXQ0KWzAuMjUwMDk1ODQ0MjY4Nzk4ODMsIm8iLCJqdWxpYT4geSA9IHgrMVxyXG4iXQ0KWzAuNTAwMzczODQwMzMyMDMxMiwibyIsIiJdDQpbMC43NTA1OTQ4NTQzNTQ4NTg0LCJvIiwiMFxyXG5cclxuIl0NClsxLjAwMDYwMjAwNjkxMjIzMTQsImkiLCJzcXJ0KHgpIl0NClsxLjI1MDYwMzkxNDI2MDg2NDMsIm8iLCJqdWxpYT4gc3FydCh4KVxyXG4iXQ0KWzEuNTEwMzUxODk2Mjg2MDEwNywibyIsIiJdDQpbMS44NTk4MDIwMDc2NzUxNzEsIm8iLCJFUlJPUjogRG9tYWluRXJyb3Igd2l0aCAtMS4wOlxyXG5zcXJ0IHdhcyBjYWxsZWQgd2l0aCBhIG5lZ2F0aXZlIHJlYWwgYXJndW1lbnQgYnV0IHdpbGwgb25seSByZXR1cm4gYSBjb21wbGV4IHJlc3VsdCBpZiBjYWxsZWQgd2l0aCBhIGNvbXBsZXggYXJndW1lbnQuIFRyeSBzcXJ0KENvbXBsZXgoeCkpLlxyXG4iXQ0K',
+document.getElementById('b97a9a05-9f8a-4995-b0a8-d55e57c4903c'), {autoPlay: true, fit: "width", loop: false}
+);
+</script>
+</div>
+<p>Then we move to a REPL block:</p><pre><code class="language-markdown hljs">```@repl 1
+@show y
+z = y^2
+```</code></pre><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; @show y</code><code class="nohighlight hljs ansi" style="display:block;">y = 0
+0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; z = y^2</code><code class="nohighlight hljs ansi" style="display:block;">0</code></pre><h3 id="Modifying-the-delay"><a class="docs-heading-anchor" href="#Modifying-the-delay">Modifying the delay</a><a id="Modifying-the-delay-1"></a><a class="docs-heading-anchor-permalink" href="#Modifying-the-delay" title="Permalink"></a></h3><p>Delay of 0:</p><pre><code class="language-markdown hljs">```@cast; delay=0, hide_inputs=true
+1
+2
+3
+```</code></pre><div style="margin: 20px">
+<div id="c177d74f-24e1-4544-8898-8b82015b47ae"></div>
+<script>
+AsciinemaPlayer.create(
+'data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6ODAsImhlaWdodCI6NiwidGltZXN0YW1wIjoxNzM2MjQ5NzAxLCJpZGxlX3RpbWVfbGltaXQiOjEuMCwiZW52Ijp7IlRFUk0iOiJ4dGVybS0yNTZjb2xvciIsIlNIRUxMIjoiL2Jpbi9iYXNoIn19ClswLjAwMDEyNDkzMTMzNTQ0OTIxODc1LCJpIiwiMSJdDQpbMC4wMDAxMjg5ODQ0NTEyOTM5NDUzLCJvIiwianVsaWE+IDFcclxuIl0NClswLjAwMDIwOTA5MzA5Mzg3MjA3MDMsIm8iLCIiXQ0KWzAuMDAwNDUzOTQ4OTc0NjA5Mzc1LCJvIiwiMVxyXG5cclxuIl0NClswLjAwMDQ2MjA1NTIwNjI5ODgyODEsImkiLCIyIl0NClswLjAwMDQ2Mzk2MjU1NDkzMTY0MDYsIm8iLCJqdWxpYT4gMlxyXG4iXQ0KWzAuMDAwNTI1OTUxMzg1NDk4MDQ2OSwibyIsIiJdDQpbMC4wMDA3MzA5OTEzNjM1MjUzOTA2LCJvIiwiMlxyXG5cclxuIl0NClswLjAwMDczNzkwNTUwMjMxOTMzNTksImkiLCIzIl0NClswLjAwMDczODg1OTE3NjYzNTc0MjIsIm8iLCJqdWxpYT4gM1xyXG4iXQ0KWzAuMDAwNzk4OTQwNjU4NTY5MzM1OSwibyIsIiJdDQpbMC4wMDEwMDM5ODA2MzY1OTY2Nzk3LCJvIiwiM1xyXG4iXQ0K',
+document.getElementById('c177d74f-24e1-4544-8898-8b82015b47ae'), {autoPlay: true, fit: "width", loop: false}
+);
+</script>
+</div>
+<p>Delay of 1:</p><pre><code class="language-markdown hljs">```@cast; delay=1, hide_inputs=true
+1
+2
+3
+```</code></pre><div style="margin: 20px">
+<div id="e4a2c07a-d5d2-41a0-b186-93a9d680e87a"></div>
+<script>
+AsciinemaPlayer.create(
+'data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6ODAsImhlaWdodCI6NiwidGltZXN0YW1wIjoxNzM2MjQ5NzAxLCJpZGxlX3RpbWVfbGltaXQiOjEuMCwiZW52Ijp7IlRFUk0iOiJ4dGVybS0yNTZjb2xvciIsIlNIRUxMIjoiL2Jpbi9iYXNoIn19Cls4LjEwNjIzMTY4OTQ1MzEyNWUtNSwiaSIsIjEiXQ0KWzEuMDAwMDgyOTY5NjY1NTI3MywibyIsImp1bGlhPiAxXHJcbiJdDQpbMi4wMDAxNTU5MjU3NTA3MzI0LCJvIiwiIl0NClszLjAwMDM4NTA0NjAwNTI0OSwibyIsIjFcclxuXHJcbiJdDQpbNC4wMDAzOTI5MTM4MTgzNTksImkiLCIyIl0NCls1LjAwMDM5NTA1OTU4NTU3MSwibyIsImp1bGlhPiAyXHJcbiJdDQpbNi4wMDA0NTI5OTUzMDAyOTMsIm8iLCIiXQ0KWzcuMDAwNjU3MDgxNjA0MDA0LCJvIiwiMlxyXG5cclxuIl0NCls4LjAwMDY2MzA0MjA2ODQ4MSwiaSIsIjMiXQ0KWzkuMDAwNjY0OTQ5NDE3MTE0LCJvIiwianVsaWE+IDNcclxuIl0NClsxMC4wMDA3MTgxMTY3NjAyNTQsIm8iLCIiXQ0KWzExLjAwMDkxNDA5NjgzMjI3NSwibyIsIjNcclxuIl0NCg==',
+document.getElementById('e4a2c07a-d5d2-41a0-b186-93a9d680e87a'), {autoPlay: true, fit: "width", loop: false}
+);
+</script>
+</div>
+<h3 id="Window-size"><a class="docs-heading-anchor" href="#Window-size">Window size</a><a id="Window-size-1"></a><a class="docs-heading-anchor-permalink" href="#Window-size" title="Permalink"></a></h3><p>The size of the window can be set with <code>height</code> and <code>width</code>.</p><pre><code class="language-markdown hljs">```@cast
+println(&quot;=&quot;^80)
+```</code></pre><div style="margin: 20px">
+<div id="99fba67c-6baf-4b86-b0ac-6ce50a2ce2e7"></div>
+<script>
+AsciinemaPlayer.create(
+'data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6ODAsImhlaWdodCI6MiwidGltZXN0YW1wIjoxNzM2MjQ5NzAxLCJpZGxlX3RpbWVfbGltaXQiOjEuMCwiZW52Ijp7IlRFUk0iOiJ4dGVybS0yNTZjb2xvciIsIlNIRUxMIjoiL2Jpbi9iYXNoIn19Cls4LjMyMDgwODQxMDY0NDUzMWUtNSwiaSIsInByaW50bG4oXCI9XCJeODApIl0NClswLjI1MDA4NjA2OTEwNzA1NTY2LCJvIiwianVsaWE+IHByaW50bG4oXCI9XCJeODApXHJcbiJdDQpbMC41MDAzNTMwOTc5MTU2NDk0LCJvIiwiPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT1cclxuIl0NClswLjc1MDM5MzE1MjIzNjkzODUsIm8iLCIiXQ0K',
+document.getElementById('99fba67c-6baf-4b86-b0ac-6ce50a2ce2e7'), {autoPlay: true, fit: "width", loop: false}
+);
+</script>
+</div>
+<pre><code class="language-markdown hljs">```@cast; width=50, height=10
+println(&quot;=&quot;^80)
+```</code></pre><div style="margin: 20px">
+<div id="2265b0c3-ddca-4c90-bec6-8134c4fd3054"></div>
+<script>
+AsciinemaPlayer.create(
+'data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6NTAsImhlaWdodCI6MTAsInRpbWVzdGFtcCI6MTczNjI0OTcwMSwiaWRsZV90aW1lX2xpbWl0IjoxLjAsImVudiI6eyJURVJNIjoieHRlcm0tMjU2Y29sb3IiLCJTSEVMTCI6Ii9iaW4vYmFzaCJ9fQpbOC4wMTA4NjQyNTc4MTI1ZS01LCJpIiwicHJpbnRsbihcIj1cIl44MCkiXQ0KWzAuMjUwMDgzMjA4MDg0MTA2NDUsIm8iLCJqdWxpYT4gcHJpbnRsbihcIj1cIl44MClcclxuIl0NClswLjUwMDMzMzA3MDc1NTAwNDksIm8iLCI9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PVxyXG4iXQ0KWzAuNzUwMzczMTI1MDc2Mjk0LCJvIiwiIl0NCg==',
+document.getElementById('2265b0c3-ddca-4c90-bec6-8134c4fd3054'), {autoPlay: true, fit: "width", loop: false}
+);
+</script>
+</div>
+<h3 id="Loops"><a class="docs-heading-anchor" href="#Loops">Loops</a><a id="Loops-1"></a><a class="docs-heading-anchor-permalink" href="#Loops" title="Permalink"></a></h3><p>We can use <code>loop=true</code> to infinitely loop the cast:</p><pre><code class="language-markdown hljs">```@cast; delay=0.5, loop=true, hide_inputs=true
+1
+2
+3
+```</code></pre><div style="margin: 20px">
+<div id="43d1a0f8-6adb-4ef6-b870-e209f9190ad7"></div>
+<script>
+AsciinemaPlayer.create(
+'data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6ODAsImhlaWdodCI6NiwidGltZXN0YW1wIjoxNzM2MjQ5NzAxLCJpZGxlX3RpbWVfbGltaXQiOjEuMCwiZW52Ijp7IlRFUk0iOiJ4dGVybS0yNTZjb2xvciIsIlNIRUxMIjoiL2Jpbi9iYXNoIn19Cls4LjcwMjI3ODEzNzIwNzAzMWUtNSwiaSIsIjEiXQ0KWzAuNTAwMDg5ODgzODA0MzIxMywibyIsImp1bGlhPiAxXHJcbiJdDQpbMS4wMDAxNjA5MzI1NDA4OTM2LCJvIiwiIl0NClsxLjUwMDM3Mjg4NjY1NzcxNDgsIm8iLCIxXHJcblxyXG4iXQ0KWzIuMDAwMzgwOTkyODg5NDA0MywiaSIsIjIiXQ0KWzIuNTAwMzgxOTQ2NTYzNzIwNywibyIsImp1bGlhPiAyXHJcbiJdDQpbMy4wMDA0Mzk4ODIyNzg0NDI0LCJvIiwiIl0NClszLjUwMDY0MzAxNDkwNzgzNywibyIsIjJcclxuXHJcbiJdDQpbNC4wMDA2NDg5NzUzNzIzMTQ1LCJpIiwiMyJdDQpbNC41MDA2NDk5MjkwNDY2MzEsIm8iLCJqdWxpYT4gM1xyXG4iXQ0KWzUuMDAwNzEwMDEwNTI4NTY0NSwibyIsIiJdDQpbNS41MDA5MDkwOTAwNDIxMTQsIm8iLCIzXHJcbiJdDQo=',
+document.getElementById('43d1a0f8-6adb-4ef6-b870-e209f9190ad7'), {autoPlay: true, fit: "width", loop: true}
+);
+</script>
+</div>
+<p>We can also specify a delay to write at the end of each loop:</p><pre><code class="language-markdown hljs">```@cast; delay=0.5, loop=true, loop_delay=4.5, hide_inputs=true
+1
+2
+3
+```</code></pre><div style="margin: 20px">
+<div id="644bd2d0-c222-40dd-a812-7fdb5b9aa906"></div>
+<script>
+AsciinemaPlayer.create(
+'data:text/plain;base64,eyJ2ZXJzaW9uIjoyLCJ3aWR0aCI6ODAsImhlaWdodCI6NiwidGltZXN0YW1wIjoxNzM2MjQ5NzAxLCJpZGxlX3RpbWVfbGltaXQiOjQuNSwiZW52Ijp7IlRFUk0iOiJ4dGVybS0yNTZjb2xvciIsIlNIRUxMIjoiL2Jpbi9iYXNoIn19ClswLjE4MzA5MjExNzMwOTU3MDMsImkiLCIxIl0NClswLjY4MzA5ODA3Nzc3NDA0NzksIm8iLCJqdWxpYT4gMVxyXG4iXQ0KWzEuMTgzMjQ3MDg5Mzg1OTg2MywibyIsIiJdDQpbMS42ODM1NTc5ODcyMTMxMzQ4LCJvIiwiMVxyXG5cclxuIl0NClsyLjE4MzU2NTEzOTc3MDUwOCwiaSIsIjIiXQ0KWzIuNjgzNTY3MDQ3MTE5MTQwNiwibyIsImp1bGlhPiAyXHJcbiJdDQpbMy4xODM2NDUwMDk5OTQ1MDcsIm8iLCIiXQ0KWzMuNjgzODU2OTY0MTExMzI4LCJvIiwiMlxyXG5cclxuIl0NCls0LjE4Mzg2NDExNjY2ODcwMSwiaSIsIjMiXQ0KWzQuNjgzODY2MDI0MDE3MzM0LCJvIiwianVsaWE+IDNcclxuIl0NCls1LjE4MzkyNjEwNTQ5OTI2OCwibyIsIiJdDQpbNS42ODQxMzU5MTM4NDg4NzcsIm8iLCIzXHJcbiJdDQpbMTAuNjg0MTM4MDU5NjE2MDg5LCJvIiwiIl0NCg==',
+document.getElementById('644bd2d0-c222-40dd-a812-7fdb5b9aa906'), {autoPlay: true, fit: "width", loop: true}
+);
+</script>
+</div>
+<p>Note that currently setting <code>loop_delay</code> increases <code>idle_time_limit</code> as an implementation detail, meaning that delays of up to <code>loop_delay</code> during code execution will be shown.</p><h3 id="All-supported-options-in-@cast-Documenter-blocks"><a class="docs-heading-anchor" href="#All-supported-options-in-@cast-Documenter-blocks">All supported options in <code>@cast</code> Documenter blocks</a><a id="All-supported-options-in-@cast-Documenter-blocks-1"></a><a class="docs-heading-anchor-permalink" href="#All-supported-options-in-@cast-Documenter-blocks" title="Permalink"></a></h3><ul><li><code>hide_inputs::Bool=false</code>. Whether or not to hide the <code>@repl</code>-style inputs before the animated gif.</li><li><code>allow_errors::Bool=false</code>. Whether or not the Documenter build should fail if exceptions are encountered during execution of the <code>@cast</code> block.</li><li><code>delay::Float64=0.25</code>. The amount of delay between line executions (to emulate typing time).</li><li><code>loop::Union{Int,Bool}=false</code>. Set to <code>true</code> for infinite looping, or an integer to loop a fixed number of times.</li><li><code>loop_delay::Union{Int,Float64}=0</code>. An amount of time to wait at the end of the cast, usually useful to pause before looping.</li><li><code>idle_time_limit::Union{Int,Float64}=1</code>. Sets the maximum amount of time to wait between printing.</li><li><code>height::Int</code>. Heuristically determined by default. Set to an integer to specify the number of lines.</li><li><code>width::Int</code>. Set to <code>80</code> by default. Set to an integer to specify the number of columns.</li></ul><h3 id="Reference-docs"><a class="docs-heading-anchor" href="#Reference-docs">Reference docs</a><a id="Reference-docs-1"></a><a class="docs-heading-anchor-permalink" href="#Reference-docs" title="Permalink"></a></h3><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="Asciicast.assets" href="#Asciicast.assets"><code>Asciicast.assets</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">Asciicast.assets(asciinema_version = &quot;3.6.3&quot;)</code></pre><p>Provides a collection of Documenter assets which can be used in <code>makedocs</code>, e.g. <code>makedocs(; assets=Asciicast.assets())</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/ericphanson/Asciicast.jl/blob/815a50e289670dd296b7a9f449dc0a84725b2092/src/Asciicast.jl#L249-L254">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../creating_casts/">« Creating casts</a><a class="docs-footer-nextpage" href="../markdown_usage/">Markdown usage »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.8.0 on <span class="colophon-date" title="Tuesday 7 January 2025 11:35">Tuesday 7 January 2025</span>. Using Julia version 1.11.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
