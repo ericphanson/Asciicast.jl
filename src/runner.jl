@@ -245,7 +245,9 @@ function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(
         push!(multicodeblock, MarkdownAST.CodeBlock("documenter-ansi", rstrip(outstr)))
     end
     if loop_delay > 0 # if there's delay, write an empty output
-        event = Event(time() + loop_delay - cast.start_time, OutputEvent, "x")
+        # note: for some reason, it doesn't seem to matter if we write an empty string or actual output here- for me
+        # it doesn't display either way
+        event = Event(time() + loop_delay - cast.start_time, OutputEvent, "")
         write_event!(cast, event)
     end
 end
