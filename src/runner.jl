@@ -103,7 +103,7 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
         loop_delay = something(parse_float_int("loop_delay", kwargs), loop_delay)
     end
     idle_time_limit = max(idle_time_limit, loop_delay)
-
+    @debug "`@cast` block delays" delay loop_delay idle_time_limit
     multicodeblock = MarkdownAST.CodeBlock[]
     n_lines = length(split(x.code))
 
