@@ -3,6 +3,20 @@ abstract type CastBlocks <: ExpanderPipeline end
 Selectors.order(::Type{CastBlocks}) = 9.1 # just after REPL blocks
 Selectors.matcher(::Type{CastBlocks}, node, page, doc) = iscode(node, r"^@cast")
 
+function parse_float_int(name, kwargs)
+    matched = match(Regex("\\b$(name)\\s*=\\s*((?:[0-9]*[.])?[0-9]+)"), kwargs)
+    if matched !== nothing
+        return parse(Float64, matched[1])
+    else
+        # match integer delay
+        matched = match(Regex("\\b$(name)\\s*=\\s*([0-9]+)"), kwargs)
+        if matched !== nothing
+            return convert(Float64, parse(Int, matched[1]))
+        end
+    end
+    return nothing
+end
+
 # We can't just run the actual REPLBlocks, because then we have no timing information.
 # Thus, we need to basically reproduce their implementation, while saving timing info.
 
@@ -34,6 +48,8 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
     height = nothing
     width = nothing
     loop = false
+    loop_delay = 0
+    idle_time_limit = 1
     if kwargs !== nothing
         # ansicolor
         matched = match(r"\bansicolor\s*=\s*(true|false)\b", kwargs)
@@ -80,30 +96,23 @@ function Selectors.runner(::Type{CastBlocks}, node, page, doc)
             end
         end
 
-        # delay
-        # match integer delay
-        matched = match(r"\bdelay\s*=\s*([0-9]+)", kwargs)
-        if matched !== nothing
-            delay = convert(Float64, parse(Int, matched[1]))
-        else
-            # match float delay
-            matched = match(r"\bdelay\s*=\s*((?:[0-9]*[.])?[0-9]+)", kwargs)
-            if matched !== nothing
-                delay = parse(Float64, matched[1])
-            end
-        end
+        delay = something(parse_float_int("delay", kwargs), delay)
+
+        idle_time_limit = something(parse_float_int("idle_time_limit", kwargs), idle_time_limit)
+
+        loop_delay = something(parse_float_int("loop_delay", kwargs), loop_delay)
     end
-
+    idle_time_limit = max(idle_time_limit, loop_delay)
+    @debug "`@cast` block delays" delay loop_delay idle_time_limit
     multicodeblock = MarkdownAST.CodeBlock[]
-
     n_lines = length(split(x.code))
 
     # If `height` isn't provided, we guess the number of lines:
     height = something(height, min(n_lines * 2, 24))
     width = something(width, 80)
-    cast = Cast(IOBuffer(), Header(; height, width, idle_time_limit=1); delay, loop)
+    cast = Cast(IOBuffer(), Header(; height, width, idle_time_limit); delay, loop)
 
-    cast_from_string!(x.code, cast; doc, page, ansicolor, mod, multicodeblock, allow_errors, x)
+    cast_from_string!(x.code, cast; doc, page, ansicolor, mod, multicodeblock, allow_errors, x, loop_delay)
 
     raw_html = sprint(show, MIME"text/html"(), cast)
 
@@ -149,7 +158,7 @@ function Base.showerror(io::IO, c::CastExecutionException)
         """)
 end
 
-function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(), page=FakePage(), ansicolor=true, mod=get_module(), multicodeblock=MarkdownAST.CodeBlock[], allow_errors=false, x=nothing, remove_prompt=false)
+function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(), page=FakePage(), ansicolor=true, mod=get_module(), multicodeblock=MarkdownAST.CodeBlock[], allow_errors=false, x=nothing, remove_prompt=false, loop_delay=0.0)
     linenumbernode = LineNumberNode(0, "REPL") # line unused, set to 0
     @debug "Evaluating @cast:\n$(x.code)"
 
@@ -234,6 +243,12 @@ function cast_from_string!(code_string::AbstractString, cast::Cast; doc=FakeDoc(
             write_event!(cast, OutputEvent, outstr)
         end
         push!(multicodeblock, MarkdownAST.CodeBlock("documenter-ansi", rstrip(outstr)))
+    end
+    if loop_delay > 0 # if there's delay, write an empty output
+        # note: for some reason, it doesn't seem to matter if we write an empty string or actual output here- for me
+        # it doesn't display either way
+        event = Event(time() + loop_delay - cast.start_time, OutputEvent, "")
+        write_event!(cast, event)
     end
 end
 

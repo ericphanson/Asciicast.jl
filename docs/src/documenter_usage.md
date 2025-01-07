@@ -196,12 +196,49 @@ println("="^80)
 println("="^80)
 ```
 
+### Loops
+We can use `loop=true` to infinitely loop the cast:
+
+````markdown
+```@cast; delay=0.5, loop=true, hide_inputs=true
+1
+2
+3
+```
+````
+
+```@cast; delay=0.5, loop=true, hide_inputs=true
+1
+2
+3
+```
+
+We can also specify a delay to write at the end of each loop:
+
+````markdown
+```@cast; delay=0.5, loop=true, loop_delay=4.5, hide_inputs=true
+1
+2
+3
+```
+````
+
+```@cast; delay=0.5, loop=true, loop_delay=4.5, hide_inputs=true
+1
+2
+3
+```
+
+Note that currently setting `loop_delay` increases `idle_time_limit` as an implementation detail, meaning that delays of up to `loop_delay` during code execution will be shown.
+
 ### All supported options in `@cast` Documenter blocks
 
 * `hide_inputs::Bool=false`. Whether or not to hide the `@repl`-style inputs before the animated gif.
 * `allow_errors::Bool=false`. Whether or not the Documenter build should fail if exceptions are encountered during execution of the `@cast` block.
 * `delay::Float64=0.25`. The amount of delay between line executions (to emulate typing time).
 * `loop::Union{Int,Bool}=false`. Set to `true` for infinite looping, or an integer to loop a fixed number of times.
+* `loop_delay::Union{Int,Float64}=0`. An amount of time to wait at the end of the cast, usually useful to pause before looping.
+* `idle_time_limit::Union{Int,Float64}=1`. Sets the maximum amount of time to wait between printing.
 * `height::Int`. Heuristically determined by default. Set to an integer to specify the number of lines.
 * `width::Int`. Set to `80` by default. Set to an integer to specify the number of columns.
 
