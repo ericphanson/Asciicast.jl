@@ -161,6 +161,25 @@ end
         @test Asciicast.parse_float_int("loop_delay",
             "width=100, height=50, delay=0.1, loop=true, loop_delay=5") == 5
     end
+
+    @testset "`@cast` block matcher" begin
+        # Documenter calls this matcher on every node of a page to decide whether
+        # `CastBlocks` should handle it. We wrap a fenced code block with the given
+        # info string (the text after the opening ```) in a node and check that only
+        # `@cast` blocks are matched. `page` and `doc` are unused, so we pass `nothing`.
+        matches(info) = Asciicast.Selectors.matcher(Asciicast.CastBlocks,
+            Asciicast.MarkdownAST.Node(Asciicast.MarkdownAST.CodeBlock(info, "1 + 1")),
+            nothing, nothing)
+        @test matches("@cast")
+        @test matches("@cast name")
+        @test matches("@cast name; delay=0.5")
+        @test !matches("@example")
+        @test !matches("julia")
+        # Nodes that are not code blocks (here a paragraph) have no info string
+        # and must not be matched.
+        @test !Asciicast.Selectors.matcher(Asciicast.CastBlocks,
+            Asciicast.MarkdownAST.Node(Asciicast.MarkdownAST.Paragraph()), nothing, nothing)
+    end
 end
 
 
