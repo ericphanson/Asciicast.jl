@@ -142,6 +142,15 @@ end
         @test count("usepackage", str) == 1
         @test contains(str, "output_1_@cast.gif")
 
+        # The same holds for a document with CRLF line endings, whichever line
+        # endings the checkout of `yaml_doc.md` has
+        crlf_input = joinpath(tmp, "crlf_input.md")
+        write(crlf_input, replace(replace(input, "\r\n" => "\n"), "\n" => "\r\n"))
+        crlf_output = joinpath(tmp, "crlf_output.md")
+        @test cast_document(crlf_input, crlf_output) == 1
+        crlf_front_matter = first(split(read(crlf_input, String), "Some text."))
+        @test startswith(read(crlf_output, String), crlf_front_matter * "Some text.")
+
         # Documents without a metadata block are unaffected, including ones
         # that start with a horizontal rule
         @test Asciicast.split_front_matter("---\n\nhello\n\n---\n", "gfm+attributes") == ("", "---\n\nhello\n\n---\n")

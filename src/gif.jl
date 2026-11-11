@@ -146,7 +146,10 @@ function cast_document(input_path, output_path=input_path; format="gfm+attribute
         write(output_path, str)
     end
     if !isempty(front_matter)
-        write(output_path, front_matter * "\n" * read(output_path, String))
+        # Separate the block from the body with a blank line that uses the same
+        # line ending as the block (e.g. CRLF on a Windows checkout)
+        newline = endswith(front_matter, "\r\n") ? "\r\n" : "\n"
+        write(output_path, front_matter * newline * read(output_path, String))
     end
     return counter[]
 end
