@@ -1,5 +1,8 @@
 ---
-title: "Example document"
+# a comment that should survive
+title: "Example: document"
+version: 1.10
+eval: no
 format:
   html:
     toc: true

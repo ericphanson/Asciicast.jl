@@ -91,20 +91,19 @@ See [`cast_document`](@ref) for more options and warnings.
 cast_readme(mod::Module) = cast_document(joinpath(pkgdir(mod), "README.md"))
 cast_readme(mod::Module, output_path) = cast_document(joinpath(pkgdir(mod), "README.md"), output_path)
 
-# Pandoc template used when writing the output document of `cast_document`.
-# Writing with `--standalone` is needed for pandoc to emit the document's metadata
-# (e.g. a YAML metadata block, which the Markdown writers put in `titleblock`).
-# Pandoc's default standalone templates also insert metadata fields such as
-# `header-includes`, `include-before`, and `include-after` into the body, and the
-# HTML/LaTeX templates wrap the body in a full document, so we use this minimal
-# template instead: the metadata block (if any), followed by the body.
-const PANDOC_TEMPLATE = """
-\$if(titleblock)\$
-\$titleblock\$
-
-\$endif\$
-\$body\$
-"""
+# Returns `(front_matter, rest)`. `front_matter` is the leading YAML metadata block
+# of `str`, verbatim (including its closing line), if pandoc parses it as metadata
+# in `format`; otherwise it is `""` and `rest == str`.
+function split_front_matter(str, format)
+    m = match(r"\A---[ \t]*\r?\n.*?^(?:---|\.\.\.)[ \t]*(?:\r?\n|\z)"ms, str)
+    m === nothing && return "", str
+    block = m.match
+    parsed = JSON3.read(read(pipeline(IOBuffer(block), `$(pandoc()) -f $format -t json`)), Dict)
+    if isempty(get(parsed, "meta", Dict())) || !isempty(get(parsed, "blocks", []))
+        return "", str
+    end
+    return block, str[(ncodeunits(block) + 1):end]
+end
 
 """
     cast_document(input_path, output_path=input_path; format="gfm+attributes")
@@ -126,7 +125,8 @@ Returns the number of gifs generated.
     the results.
 """
 function cast_document(input_path, output_path=input_path; format="gfm+attributes", hacky_fix=true)
-    json = JSON3.read(read(`$(pandoc()) --wrap=preserve -f $format -t json $input_path`), Dict)
+    front_matter, body = split_front_matter(read(input_path, String), format)
+    json = JSON3.read(read(pipeline(IOBuffer(body), `$(pandoc()) --wrap=preserve -f $format -t json`)), Dict)
     base_dir = dirname(output_path)
     mkpath(joinpath(base_dir, "assets"))
     counter = Ref{Int}(0)
@@ -134,12 +134,8 @@ function cast_document(input_path, output_path=input_path; format="gfm+attribute
 
     act = (args...) -> cast_action(args...; base_dir, counter, module_meta)
     output = JSON3.write(Pandoc.filter(json, [rm_old_gif, act]))
-    mktempdir() do tmp
-        template = joinpath(tmp, "template.txt")
-        write(template, PANDOC_TEMPLATE)
-        open(`$(pandoc()) -f json -t $format --standalone --template=$(template) --wrap=preserve --resource-path=$(base_dir) -o $output_path`; write=true) do io
-            write(io, output)
-        end
+    open(`$(pandoc()) -f json -t $format --wrap=preserve --resource-path=$(base_dir) -o $output_path`; write=true) do io
+        write(io, output)
     end
     if hacky_fix
         # We do this since GitHub doesn't seem to display syntax highlighting
@@ -148,6 +144,9 @@ function cast_document(input_path, output_path=input_path; format="gfm+attribute
         str = read(output_path, String)
         str = replace(str, r"^``` {.julia "m => "```julia {", r"^``` julia"m => "```julia")
         write(output_path, str)
+    end
+    if !isempty(front_matter)
+        write(output_path, front_matter * "\n" * read(output_path, String))
     end
     return counter[]
 end
