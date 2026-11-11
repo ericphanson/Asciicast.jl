@@ -121,6 +121,29 @@ end
         end
     end
 
+    @testset "YAML metadata block is preserved" begin
+        tmp = mktempdir()
+        output = joinpath(tmp, "output.md")
+        @test cast_document("yaml_doc.md", output) == 1
+        # pandoc writes native line endings, so normalize them for Windows
+        str = replace(read(output, String), "\r\n" => "\n")
+        @test startswith(str, """
+            ---
+            format:
+              html:
+                toc: true
+            header-includes:
+            - \\usepackage{amsmath}
+            title: Example document
+            ---
+
+            Some text.
+            """)
+        # `header-includes` should only appear in the metadata block, not in the body
+        @test count("usepackage", str) == 1
+        @test contains(str, "output_1_@cast.gif")
+    end
+
     @testset "markdown errors" begin
         tmp = mktempdir()
         output = joinpath(tmp, "output.md")
