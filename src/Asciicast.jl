@@ -5,7 +5,7 @@ using Logging
 import Random
 using REPL
 using Documenter
-using Documenter: Expanders, Selectors, iscode, _any_color_fmt, droplines, prepend_prompt, remove_sandbox_from_output
+using Documenter: Expanders, Selectors, _any_color_fmt, droplines, prepend_prompt, remove_sandbox_from_output
 using Documenter.Expanders: ExpanderPipeline
 using UUIDs
 using MarkdownAST

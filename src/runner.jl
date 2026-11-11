@@ -1,7 +1,12 @@
 abstract type CastBlocks <: ExpanderPipeline end
 
 Selectors.order(::Type{CastBlocks}) = 9.1 # just after REPL blocks
-Selectors.matcher(::Type{CastBlocks}, node, page, doc) = iscode(node, r"^@cast")
+
+function Selectors.matcher(::Type{CastBlocks}, node, page, doc)
+    # Identical to Documenter 1.19's `iscode(node, r"^@cast")`, which got removed in 1.20.
+    x = node.element
+    return x isa MarkdownAST.CodeBlock && occursin(r"^@cast", x.info)
+end
 
 function parse_float_int(name, kwargs)
     matched = match(Regex("\\b$(name)\\s*=\\s*((?:[0-9]*[.])?[0-9]+)"), kwargs)
