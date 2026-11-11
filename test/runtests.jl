@@ -128,6 +128,35 @@ end
         end
     end
 
+    @testset "YAML metadata block is preserved" begin
+        tmp = mktempdir()
+        output = joinpath(tmp, "output.md")
+        input = read("yaml_doc.md", String)
+        @test cast_document("yaml_doc.md", output) == 1
+        str = read(output, String)
+        # The metadata block is copied verbatim (comments, key order, and
+        # values like `1.10` are not rewritten by pandoc)
+        front_matter = first(split(input, "Some text."))
+        @test startswith(str, front_matter)
+        @test startswith(replace(str, "\r\n" => "\n"), replace(front_matter, "\r\n" => "\n") * "Some text.\n")
+        @test count("usepackage", str) == 1
+        @test contains(str, "output_1_@cast.gif")
+
+        # The same holds for a document with CRLF line endings, whichever line
+        # endings the checkout of `yaml_doc.md` has
+        crlf_input = joinpath(tmp, "crlf_input.md")
+        write(crlf_input, replace(replace(input, "\r\n" => "\n"), "\n" => "\r\n"))
+        crlf_output = joinpath(tmp, "crlf_output.md")
+        @test cast_document(crlf_input, crlf_output) == 1
+        crlf_front_matter = first(split(read(crlf_input, String), "Some text."))
+        @test startswith(read(crlf_output, String), crlf_front_matter * "Some text.")
+
+        # Documents without a metadata block are unaffected, including ones
+        # that start with a horizontal rule
+        @test Asciicast.split_front_matter("---\n\nhello\n\n---\n", "gfm+attributes") == ("", "---\n\nhello\n\n---\n")
+        @test Asciicast.split_front_matter("hello\n", "gfm+attributes") == ("", "hello\n")
+    end
+
     @testset "markdown errors" begin
         tmp = mktempdir()
         output = joinpath(tmp, "output.md")

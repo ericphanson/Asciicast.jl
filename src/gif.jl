@@ -91,6 +91,20 @@ See [`cast_document`](@ref) for more options and warnings.
 cast_readme(mod::Module) = cast_document(joinpath(pkgdir(mod), "README.md"))
 cast_readme(mod::Module, output_path) = cast_document(joinpath(pkgdir(mod), "README.md"), output_path)
 
+# Returns `(front_matter, rest)`. `front_matter` is the leading YAML metadata block
+# of `str`, verbatim (including its closing line), if pandoc parses it as metadata
+# in `format`; otherwise it is `""` and `rest == str`.
+function split_front_matter(str, format)
+    m = match(r"\A---[ \t]*\r?\n.*?^(?:---|\.\.\.)[ \t]*(?:\r?\n|\z)"ms, str)
+    m === nothing && return "", str
+    block = m.match
+    parsed = JSON3.read(read(pipeline(IOBuffer(block), `$(pandoc()) -f $format -t json`)), Dict)
+    if isempty(get(parsed, "meta", Dict())) || !isempty(get(parsed, "blocks", []))
+        return "", str
+    end
+    return block, str[(ncodeunits(block) + 1):end]
+end
+
 """
     cast_document(input_path, output_path=input_path; format="gfm+attributes")
 
@@ -111,7 +125,8 @@ Returns the number of gifs generated.
     the results.
 """
 function cast_document(input_path, output_path=input_path; format="gfm+attributes", hacky_fix=true)
-    json = JSON3.read(read(`$(pandoc()) --wrap=preserve -f $format -t json $input_path`), Dict)
+    front_matter, body = split_front_matter(read(input_path, String), format)
+    json = JSON3.read(read(pipeline(IOBuffer(body), `$(pandoc()) --wrap=preserve -f $format -t json`)), Dict)
     base_dir = dirname(output_path)
     mkpath(joinpath(base_dir, "assets"))
     counter = Ref{Int}(0)
@@ -129,6 +144,12 @@ function cast_document(input_path, output_path=input_path; format="gfm+attribute
         str = read(output_path, String)
         str = replace(str, r"^``` {.julia "m => "```julia {", r"^``` julia"m => "```julia")
         write(output_path, str)
+    end
+    if !isempty(front_matter)
+        # Separate the block from the body with a blank line that uses the same
+        # line ending as the block (e.g. CRLF on a Windows checkout)
+        newline = endswith(front_matter, "\r\n") ? "\r\n" : "\n"
+        write(output_path, front_matter * newline * read(output_path, String))
     end
     return counter[]
 end
