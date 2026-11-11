@@ -3,10 +3,11 @@ on:
   schedule:
     # Run CI every Sunday
     - cron: '0 0 * * 0'
+  workflow_dispatch:
   push:
     branches:
       - main
-      - /^release-.*$/
+      - 'release-*'
     paths:
       - '.github/workflows/ci.yml'
       - 'test/**'

@@ -57,7 +57,14 @@ end
 
         # Sometimes the event here has 2 lines rather than 1 :(. So we will just test
         # `contains`.
-        @test contains(strip(events[1].event_data), "\e[36m\e[1m[ \e[22m\e[39m\e[36m\e[1mInfo: \e[22m\e[39mHello!")
+        # `record_output` only emits color if `stdout` has color enabled, which depends
+        # on how the tests were launched (e.g. `--color=yes`, or a terminal vs. a pipe).
+        expected = if get(stdout, :color, false)
+            "\e[36m\e[1m[ \e[22m\e[39m\e[36m\e[1mInfo: \e[22m\e[39mHello!"
+        else
+            "[ Info: Hello!"
+        end
+        @test contains(strip(events[1].event_data), expected)
     end
 
     @testset "Example 3" begin
