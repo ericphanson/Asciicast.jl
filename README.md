@@ -19,8 +19,9 @@ It does so in a few ways:
   Usage](https://ericphanson.github.io/Asciicast.jl/dev/documenter_usage/)
   portion of the docs.
 - provides functionality to generate `asciicast` files (using the [v2
-  file
-  format](https://github.com/asciinema/asciinema/blob/asciicast-v2/doc/asciicast-v2.md))
+  file format](https://docs.asciinema.org/manual/asciicast/v2/) by
+  default, or the [v3 file
+  format](https://docs.asciinema.org/manual/asciicast/v3/))
   from Julia code, using the `cast""` string macro, a `record_output`
   function, or using low-level `write_event` commands. These files can
   be played in the terminal or uploaded to asciinema.org with the

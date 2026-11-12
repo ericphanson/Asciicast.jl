@@ -1,6 +1,6 @@
 using Asciicast
-using Test, JSON3, Dates, Aqua
-using Asciicast: Event, Header, OutputEvent, InputEvent, parse_cast
+using Test, JSON3, Dates, Aqua, Base64
+using Asciicast: Event, Header, OutputEvent, InputEvent, MarkerEvent, ResizeEvent, ExitEvent, parse_cast
 
 function test_default_header(header)
     @test header isa Header
@@ -102,6 +102,151 @@ end
         @test events == events2
     end
 
+
+    @testset "asciicast v3 parsing" begin
+        # Example from https://docs.asciinema.org/manual/asciicast/v3/, plus an empty
+        # line and an event with an unknown code (both must be ignored)
+        v3 = """
+        {"version": 3, "term": {"cols": 80, "rows": 24, "type": "xterm-256color"}, "timestamp": 1504467315, "title": "Demo", "env": {"SHELL": "/bin/zsh"}}
+        # event stream follows the header
+        [0.248, "o", "\\u001b[1;31mHello \\u001b[32mWorld!\\u001b[0m\\n"]
+        [1.001, "o", "That was ok\\rThis is better."]
+        [3.500, "m", ""]
+        [0.143, "o", "Now... "]
+        # terminal window resized to 90 cols and 30 rows
+        [2.050, "r", "90x30"]
+
+        [0.500, "z", "unknown event code"]
+        [1.041, "o", "Bye!"]
+        [0.887, "x", "0"]
+        """
+        header, events = parse_cast(IOBuffer(v3))
+        @test header.version == 3
+        @test header.width == 80
+        @test header.height == 24
+        @test header.timestamp == 1504467315
+        @test header.title == "Demo"
+        @test header.env == Dict("SHELL" => "/bin/zsh", "TERM" => "xterm-256color")
+        @test header.theme === nothing
+        @test [e.type for e in events] == [OutputEvent, OutputEvent, MarkerEvent, OutputEvent,
+                                           ResizeEvent, OutputEvent, ExitEvent]
+        # Intervals are accumulated into times since the start, including the interval
+        # of the skipped event
+        @test [e.time for e in events] ≈ cumsum([0.248, 1.001, 3.5, 0.143, 2.05, 0.5 + 1.041, 0.887])
+        @test events[1].event_data == "\e[1;31mHello \e[32mWorld!\e[0m\n"
+        @test events[5].event_data == "90x30"
+        @test events[end].event_data == "0"
+
+        # Theme is read from `term.theme`; an explicit `TERM` in `env` is kept
+        theme = Dict("fg" => "#d0d0d0", "bg" => "#212121", "palette" => join(fill("#151515", 8), ":"))
+        header_line = JSON3.write(Dict("version" => 3, "tags" => ["demo"],
+            "term" => Dict("cols" => 100, "rows" => 50, "type" => "xterm", "version" => "VTE(7802)", "theme" => theme),
+            "env" => Dict("TERM" => "screen"), "idle_time_limit" => 2))
+        header, events = parse_cast(IOBuffer(header_line * "\n"))
+        @test (header.width, header.height) == (100, 50)
+        @test header.theme == theme
+        @test header.env == Dict("TERM" => "screen")
+        @test header.idle_time_limit == 2.0
+        @test isempty(events)
+
+        # Minimal header
+        header, events = parse_cast(IOBuffer("""{"version": 3, "term": {"cols": 10, "rows": 5}}\n[1.0, "o", "a"]\n"""))
+        @test (header.width, header.height, header.env, header.timestamp) == (10, 5, nothing, nothing)
+        @test only(events) == Event(1.0, OutputEvent, "a")
+
+        # v2 files with marker and resize events; times are absolute
+        header, events = parse_cast(IOBuffer("""
+        {"version": 2, "width": 80, "height": 24}
+        [0.5, "o", "a"]
+        [1.5, "m", ""]
+        [4.0, "r", "90x30"]
+        """))
+        @test header.version == 2
+        @test events == [Event(0.5, OutputEvent, "a"), Event(1.5, MarkerEvent, ""), Event(4.0, ResizeEvent, "90x30")]
+
+        @test_throws ErrorException parse_cast(IOBuffer("""{"version": 1, "width": 80, "height": 24}\n"""))
+    end
+
+    @testset "asciicast v3 writing" begin
+        @test_throws ArgumentError Cast(IOBuffer(), Header(; version=4))
+
+        io = IOBuffer()
+        cast = Cast(io, Header(; version=3, title="t", theme=Dict("fg" => "#ffffff", "bg" => "#000000", "palette" => "#000000:#ffffff")))
+        write_event!(cast, Event(0.25, OutputEvent, "hello\n"))
+        write_event!(cast, Event(1.0, InputEvent, "x"))
+        write_event!(cast, Event(1.0, MarkerEvent, "label"))
+        write_event!(cast, Event(3.5, ExitEvent, "0"))
+        lines = split(String(take!(copy(io))), "\n"; keepempty=false)
+        header_obj = JSON3.read(lines[1])
+        @test header_obj.version == 3
+        @test header_obj.term.cols == 80
+        @test header_obj.term.rows == 24
+        @test header_obj.term.type == get(ENV, "TERM", "xterm-256color")
+        @test header_obj.term.theme.fg == "#ffffff"
+        @test header_obj.title == "t"
+        @test !haskey(header_obj, :width) && !haskey(header_obj, :height) && !haskey(header_obj, :theme)
+        # Intervals, not absolute times
+        @test [JSON3.read(l)[1] for l in lines[2:end]] == [0.25, 0.75, 0.0, 2.5]
+        @test [JSON3.read(l)[2] for l in lines[2:end]] == ["o", "i", "m", "x"]
+
+        seekstart(io)
+        header, events = parse_cast(io)
+        @test header.version == 3
+        @test header.title == "t"
+        @test [e.time for e in events] ≈ [0.25, 1.0, 1.0, 3.5]
+        @test [e.event_data for e in events] == ["hello\r\n", "x", "label", "0"]
+
+        # Intervals are rounded to milliseconds, carrying the rounding error forward,
+        # so the times read back stay within half a millisecond of the times written
+        io = IOBuffer()
+        cast = Cast(io, Header(; version=3))
+        times = [0.0004 * k for k in 1:1000]
+        for t in times
+            write_event!(cast, Event(t, OutputEvent, "."))
+        end
+        seekstart(io)
+        _, events = parse_cast(io)
+        @test maximum(abs.([e.time for e in events] .- times)) <= 0.0005 + 1e-9
+
+        # `record_output` accepts `version`, like other `Header` keyword arguments
+        io = IOBuffer()
+        record_output(io; version=3) do
+            println("hi")
+        end
+        seekstart(io)
+        header, events = parse_cast(io)
+        @test header.version == 3
+        @test any(e -> contains(e.event_data, "hi"), events)
+
+        # Re-writing the events of a `cast"..."` cast as v3 and reading them back
+        # gives the same events up to millisecond rounding
+        c = cast"""
+           julia> 1+1
+           2
+           """0.25
+        _, events = parse_cast(IOBuffer(Asciicast.collect_bytes(c)))
+        io = IOBuffer()
+        c3 = Cast(io, Header(; version=3))
+        foreach(e -> write_event!(c3, e), events)
+        seekstart(io)
+        _, events3 = parse_cast(io)
+        @test [(e.type, e.event_data) for e in events3] == [(e.type, e.event_data) for e in events]
+        @test all(isapprox(a.time, b.time; atol=0.0005 + 1e-9) for (a, b) in zip(events, events3))
+
+        # The bundled player and agg only read v2, so v3 casts are shown and converted
+        # to gifs via v2
+        html_str = sprint(show, MIME"text/html"(), c3)
+        b64 = match(r"base64,([^']*)'", html_str)[1]
+        header2, events2 = parse_cast(IOBuffer(base64decode(b64)))
+        @test header2.version == 2
+        @test [e.event_data for e in events2] == [e.event_data for e in events3]
+        @test [e.time for e in events2] ≈ [e.time for e in events3]
+        mktempdir() do tmp
+            gif = joinpath(tmp, "out.gif")
+            Asciicast.save_gif(gif, c3)
+            @test filesize(gif) > 0
+        end
+    end
 
     @testset "README updated" begin
         # Test that the README functionality works, and the README is up-to-date:
