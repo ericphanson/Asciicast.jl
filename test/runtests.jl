@@ -258,12 +258,19 @@ end
         header_line(header) = (io = IOBuffer(); Cast(io, header); String(take!(seekstart(io))))
         reparse(header) = first(parse_cast(IOBuffer(header_line(header))))
 
-        # The default v2 header is written exactly as before `term_type` was added
+        # Top-level key order is fixed by the writer; `env` and `theme` keys are sorted
         header = withenv("TERM" => "xterm-256color", "SHELL" => "/bin/bash") do
             Header(; timestamp=1)
         end
-        @test header_line(header) == """{"version":2,"width":80,"height":24,"timestamp":1,"env":{"TERM":"xterm-256color","SHELL":"/bin/bash"}}\n"""
+        @test header_line(header) == """{"version":2,"width":80,"height":24,"timestamp":1,"env":{"SHELL":"/bin/bash","TERM":"xterm-256color"}}\n"""
         @test header_line(Header(; timestamp=1, env=nothing)) == """{"version":2,"width":80,"height":24,"timestamp":1}\n"""
+        many = Dict(string(c) => "v" for c in 'a':'z')
+        theme = Dict("palette" => "#000000:#ffffff", "fg" => "#ffffff", "bg" => "#000000")
+        for version in (2, 3)
+            line = header_line(Header(; version, env=many, theme, term_type=nothing))
+            @test contains(line, "{" * join(("\"$c\":\"v\"" for c in 'a':'z'), ",") * "}")
+            @test contains(line, """{"bg":"#000000","fg":"#ffffff","palette":"#000000:#ffffff"}""")
+        end
 
         # v2: `term_type` is stored as `env["TERM"]`, unless `env` has its own `TERM`
         h = reparse(Header(; term_type="xterm", env=Dict("SHELL" => "/bin/sh")))

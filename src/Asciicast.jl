@@ -181,6 +181,9 @@ function json_object(pairs...)
     return NamedTuple{Tuple(first.(kept))}(Tuple(last.(kept)))
 end
 
+# Keys sorted, so the written header does not depend on `Dict` iteration order
+sorted_object(obj) = obj === nothing ? nothing : json_object((k => obj[k] for k in sort!(collect(keys(obj))))...)
+
 function write_header_v2(header::Header)
     env = header.env
     if env !== nothing && header.term_type !== nothing && !haskey(env, "TERM")
@@ -190,16 +193,17 @@ function write_header_v2(header::Header)
     return json_object("version" => 2, "width" => header.width, "height" => header.height,
                        "timestamp" => header.timestamp, "duration" => header.duration,
                        "idle_time_limit" => header.idle_time_limit, "command" => header.command,
-                       "title" => header.title, "env" => env, "theme" => header.theme)
+                       "title" => header.title, "env" => sorted_object(env),
+                       "theme" => sorted_object(header.theme))
 end
 
 function write_header_v3(header::Header)
     term = json_object("cols" => header.width, "rows" => header.height,
                        "type" => header.term_type, "version" => header.term_version,
-                       "theme" => header.theme)
+                       "theme" => sorted_object(header.theme))
     return json_object("version" => 3, "term" => term, "timestamp" => header.timestamp,
                        "idle_time_limit" => header.idle_time_limit, "command" => header.command,
-                       "title" => header.title, "env" => header.env, "tags" => header.tags)
+                       "title" => header.title, "env" => sorted_object(header.env), "tags" => header.tags)
 end
 
 read_object(obj) = obj === nothing ? nothing : Object(string(k) => string(v) for (k, v) in obj)
