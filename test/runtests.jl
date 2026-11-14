@@ -1,5 +1,5 @@
 using Asciicast
-using Test, JSON3, Dates, Aqua, Base64
+using Test, JSON, Dates, Aqua, Base64
 using Asciicast: Event, Header, OutputEvent, InputEvent, MarkerEvent, ResizeEvent, ExitEvent, parse_cast
 
 function test_default_header(header)
@@ -140,7 +140,7 @@ end
 
         # `term` fields and `tags` are read; an explicit `TERM` in `env` is kept
         theme = Dict("fg" => "#d0d0d0", "bg" => "#212121", "palette" => join(fill("#151515", 8), ":"))
-        header_line = JSON3.write(Dict("version" => 3, "tags" => ["demo"],
+        header_line = JSON.json(Dict("version" => 3, "tags" => ["demo"],
             "term" => Dict("cols" => 100, "rows" => 50, "type" => "xterm", "version" => "VTE(7802)", "theme" => theme),
             "env" => Dict("TERM" => "screen"), "idle_time_limit" => 2))
         header, events = parse_cast(IOBuffer(header_line * "\n"))
@@ -182,18 +182,18 @@ end
         write_event!(cast, Event(1.0, MarkerEvent, "label"))
         write_event!(cast, Event(3.5, ExitEvent, "0"))
         lines = split(String(take!(copy(io))), "\n"; keepempty=false)
-        header_obj = JSON3.read(lines[1])
+        header_obj = JSON.parse(lines[1])
         @test header_obj.version == 3
         @test header_obj.term.cols == 80
         @test header_obj.term.rows == 24
         @test header_obj.term.type == get(ENV, "TERM", "xterm-256color")
         @test header_obj.term.theme.fg == "#ffffff"
         @test header_obj.title == "t"
-        @test !haskey(header_obj, :width) && !haskey(header_obj, :height) && !haskey(header_obj, :theme)
-        @test !haskey(header_obj.env, :TERM)
+        @test !haskey(header_obj, "width") && !haskey(header_obj, "height") && !haskey(header_obj, "theme")
+        @test !haskey(header_obj.env, "TERM")
         # Intervals, not absolute times
-        @test [JSON3.read(l)[1] for l in lines[2:end]] == [0.25, 0.75, 0.0, 2.5]
-        @test [JSON3.read(l)[2] for l in lines[2:end]] == ["o", "i", "m", "x"]
+        @test [JSON.parse(l)[1] for l in lines[2:end]] == [0.25, 0.75, 0.0, 2.5]
+        @test [JSON.parse(l)[2] for l in lines[2:end]] == ["o", "i", "m", "x"]
 
         seekstart(io)
         header, events = parse_cast(io)
@@ -324,12 +324,12 @@ end
 
         # v3 files round-trip through `parse_cast` and `Cast`
         theme = Dict("fg" => "#d0d0d0", "bg" => "#212121", "palette" => join(fill("#151515", 8), ":"))
-        v3 = JSON3.write(Dict("version" => 3, "tags" => ["demo", "test"], "timestamp" => 1,
+        v3 = JSON.json(Dict("version" => 3, "tags" => ["demo", "test"], "timestamp" => 1,
             "idle_time_limit" => 2.5, "command" => "julia", "title" => "T",
             "env" => Dict("SHELL" => "/bin/zsh"),
             "term" => Dict("cols" => 100, "rows" => 50, "type" => "xterm", "version" => "VTE(7802)", "theme" => theme)))
         header, _ = parse_cast(IOBuffer(v3 * "\n"))
-        @test JSON3.read(header_line(header), Dict) == JSON3.read(v3, Dict)
+        @test JSON.parse(header_line(header)) == JSON.parse(v3)
         h = reparse(header)
         @test all(getfield(h, k) == getfield(header, k) for k in fieldnames(Header))
         h = reparse(Header(; version=3, duration=1.5))
@@ -443,8 +443,8 @@ end
 
             # Independent reading of the raw lines
             lines = filter(l -> !isempty(strip(l)) && !(exp.version == 3 && startswith(l, "#")), readlines(path))
-            @test JSON3.read(lines[1]).version == exp.version
-            raw = [JSON3.read(l) for l in lines[2:end]]
+            @test JSON.parse(lines[1]).version == exp.version
+            raw = [JSON.parse(l) for l in lines[2:end]]
             times = exp.version == 3 ? cumsum(Float64[r[1] for r in raw]) : Float64[r[1] for r in raw]
             @test length(events) == length(raw)
             @test [e.time for e in events] ≈ times

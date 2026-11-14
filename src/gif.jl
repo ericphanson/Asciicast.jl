@@ -99,7 +99,7 @@ function split_front_matter(str, format)
     m = match(r"\A---[ \t]*\r?\n.*?^(?:---|\.\.\.)[ \t]*(?:\r?\n|\z)"ms, str)
     m === nothing && return "", str
     block = m.match
-    parsed = JSON3.read(read(pipeline(IOBuffer(block), `$(pandoc()) -f $format -t json`)), Dict)
+    parsed = JSON.parse(read(pipeline(IOBuffer(block), `$(pandoc()) -f $format -t json`)))
     if isempty(get(parsed, "meta", Dict())) || !isempty(get(parsed, "blocks", []))
         return "", str
     end
@@ -127,14 +127,14 @@ Returns the number of gifs generated.
 """
 function cast_document(input_path, output_path=input_path; format="gfm+attributes", hacky_fix=true)
     front_matter, body = split_front_matter(read(input_path, String), format)
-    json = JSON3.read(read(pipeline(IOBuffer(body), `$(pandoc()) --wrap=preserve -f $format -t json`)), Dict)
+    json = JSON.parse(read(pipeline(IOBuffer(body), `$(pandoc()) --wrap=preserve -f $format -t json`)))
     base_dir = dirname(output_path)
     mkpath(joinpath(base_dir, "assets"))
     counter = Ref{Int}(0)
     module_meta = Dict{Symbol, Any}()
 
     act = (args...) -> cast_action(args...; base_dir, counter, module_meta)
-    output = JSON3.write(Pandoc.filter(json, [rm_old_gif, act]))
+    output = JSON.json(Pandoc.filter(json, [rm_old_gif, act]))
     open(`$(pandoc()) -f json -t $format --wrap=preserve --resource-path=$(base_dir) -o $output_path`; write=true) do io
         write(io, output)
     end
