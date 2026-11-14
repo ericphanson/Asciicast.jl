@@ -254,6 +254,46 @@ end
         end
     end
 
+    @testset "Event data line endings" begin
+        # `write_event!` writes a lone `\n` as `\r\n` in output and input data only
+        for version in (2, 3)
+            io = IOBuffer()
+            cast = Cast(io, Header(; version))
+            written = [Event(0.5, OutputEvent, "abc\nX"), Event(0.6, OutputEvent, "a\r\nb"),
+                       Event(0.7, InputEvent, "1+1\n"), Event(1.0, MarkerEvent, "first\nsecond"),
+                       Event(1.5, ResizeEvent, "100x30"), Event(2.0, ExitEvent, "0")]
+            foreach(e -> write_event!(cast, e), written)
+            _, events = parse_cast(seekstart(io))
+            @test [e.event_data for e in events] == ["abc\r\nX", "a\r\nb", "1+1\r\n", "first\nsecond", "100x30", "0"]
+        end
+
+        # Converting a v3 cast to v2 keeps the event data and times as read from the v3 file
+        v3 = """{"version":3,"term":{"cols":80,"rows":24}}
+            [0.5,"o","abc\\nX"]
+            [0.25,"i","y\\n"]
+            [0.25,"m","first\\nsecond"]
+            [0.125,"r","100x30"]
+            [1.0,"x","1"]
+            """
+        header, events = parse_cast(IOBuffer(v3))
+        @test [e.event_data for e in events] == ["abc\nX", "y\n", "first\nsecond", "100x30", "1"]
+        cast = Asciicast.Cast{IOBuffer}(IOBuffer(Vector{UInt8}(v3)), header, 0.0, Ref(0), Ref(0), 0.0, false)
+        h2, events2 = parse_cast(IOBuffer(Asciicast.v2_bytes(cast)))
+        @test h2.version == 2
+        @test events2 == events
+        html = sprint(show, MIME"text/html"(), cast)
+        b64 = match(r"base64,([^']*)'", html)[1]
+        @test parse_cast(IOBuffer(base64decode(b64)))[2] == events
+
+        # `delay` is applied once, when the v3 cast is written, not again by the conversion
+        io = IOBuffer()
+        cast = Cast(io, Header(; version=3); delay=0.5)
+        foreach(t -> write_event!(cast, Event(t, OutputEvent, ".")), [0.0, 0.25, 0.5])
+        _, events = parse_cast(IOBuffer(Asciicast.collect_bytes(cast)))
+        @test [e.time for e in events] == [0.0, 0.75, 1.5]
+        @test parse_cast(IOBuffer(Asciicast.v2_bytes(cast)))[2] == events
+    end
+
     @testset "Header reading and writing" begin
         header_line(header) = (io = IOBuffer(); Cast(io, header); String(take!(seekstart(io))))
         reparse(header) = first(parse_cast(IOBuffer(header_line(header))))
@@ -372,10 +412,10 @@ end
         header_fields = (:width, :height, :timestamp, :duration, :idle_time_limit, :command, :title,
                          :env, :theme, :term_type, :term_version, :tags)
         codes = Dict("o" => OutputEvent, "i" => InputEvent, "m" => MarkerEvent, "r" => ResizeEvent, "x" => ExitEvent)
-        # `write_event!` writes a lone `\n` as `\r\n`
-        crlf(s) = replace(s, r"(?<!\r)\n" => "\r\n")
+        # `write_event!` writes a lone `\n` in output and input data as `\r\n`
+        crlf(e) = e.type in (OutputEvent, InputEvent) ? replace(e.event_data, r"(?<!\r)\n" => "\r\n") : e.event_data
         same_events(a, b; atol) = length(a) == length(b) &&
-            all(x.type == y.type && crlf(x.event_data) == crlf(y.event_data) &&
+            all(x.type == y.type && x.event_data == crlf(y) &&
                 isapprox(x.time, y.time; atol) for (x, y) in zip(a, b))
         function rewrite(header, events)
             io = IOBuffer()
@@ -428,13 +468,13 @@ end
                 # v2 stores the terminal type only in `env["TERM"]`, which a v3 `env` may already set
                 env = header.env
                 @test h2.term_type == (env === nothing ? nothing : get(env, "TERM", header.term_type))
-                @test same_events(e2, events; atol=1e-9)
+                @test e2 == events
             end
             if name in ("asciinema-edit-v2.cast", "oobscan-v3.cast")
                 html = sprint(show, MIME"text/html"(), cast)
                 @test contains(html, "AsciinemaPlayer.create")
                 b64 = match(r"base64,([^']*)'", html)[1]
-                @test same_events(parse_cast(IOBuffer(base64decode(b64)))[2], events; atol=1e-9)
+                @test parse_cast(IOBuffer(base64decode(b64)))[2] == events
             end
         end
     end

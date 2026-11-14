@@ -83,6 +83,9 @@ An enum of asciicast event types:
 * `Asciicast.MarkerEvent` (code `"m"`)
 * `Asciicast.ResizeEvent` (code `"r"`, data `"{COLS}x{ROWS}"`)
 * `Asciicast.ExitEvent` (code `"x"`, data is the exit status; defined in asciicast v3)
+
+[`write_event!`](@ref) writes a lone `\n` in the data of `OutputEvent` and `InputEvent` as
+`\r\n`, and writes the data of the other types unchanged.
 """
 @enum EventType OutputEvent InputEvent MarkerEvent ResizeEvent ExitEvent
 
@@ -100,6 +103,8 @@ const CODE_EVENTS = Dict(v => k for (k, v) in EVENT_CODES)
 Represents an event in a cast file. `time` is the time in seconds since the start of the
 recording, for both v2 and v3 casts (v3 files store the interval since the previous
 event; [`parse_cast`](@ref) and [`write_event!`](@ref) convert between the two).
+`event_data` is kept as read by [`parse_cast`](@ref); [`write_event!`](@ref) normalises
+line endings in the data of output and input events only.
 See also [`EventType`](@ref).
 """
 struct Event
@@ -168,11 +173,13 @@ function Cast(write_handle::Union{IO, AbstractString}=IOBuffer(), header::Header
     if write_handle isa AbstractString
         mkpath(dirname(write_handle))
     end
-    write!(write_handle) do io
-        JSON3.write(io, header.version == 3 ? write_header_v3(header) : write_header_v2(header))
-        println(io)
-    end
+    write!(io -> write_header(io, header), write_handle)
     return Cast{typeof(write_handle)}(write_handle, header, start_time, Ref(0), Ref(0), delay, loop)
+end
+
+function write_header(io::IO, header::Header)
+    JSON3.write(io, header.version == 3 ? write_header_v3(header) : write_header_v2(header))
+    println(io)
 end
 
 # NamedTuple of the non-`nothing` pairs, so JSON3 writes them in this order and omits the rest
@@ -245,11 +252,13 @@ function v2_bytes(cast::Cast)
     cast.header.version == 2 && return bytes
     header, events = parse_cast(IOBuffer(bytes))
     fields = (k => getfield(header, k) for k in fieldnames(Header) if k != :version)
-    v2 = Cast(IOBuffer(), Header(; fields..., version=2))
+    io = IOBuffer()
+    write_header(io, Header(; fields..., version=2))
+    # Not `write_event!`, so the data is kept as recorded, without its `\n` normalisation
     for event in events
-        write_event!(v2, event)
+        write_event_line(io, event.time, event.type, event.event_data)
     end
-    return collect_bytes(v2)
+    return take!(io)
 end
 
 Base.show(io::IO, ::MIME"text/html", cast::Cast) = show_html(io, cast)
@@ -294,6 +303,9 @@ save(output, cast::Cast) = write(output, collect_bytes(cast))
 
 Write an event to `cast` of type `event_type` (e.g. `OutputEvent` or `InputEvent`; see [`EventType`](@ref)) with data given by `event_data`.
 
+For `OutputEvent` and `InputEvent`, each `\n` not preceded by `\r` is written as `\r\n`.
+The data of other event types (markers, resizes, exits) is written unchanged.
+
 For v3 casts, the interval since the previous event is written, rounded to millisecond
 precision. The rounding error is carried over to the next event, so the sum of the intervals stays within
 half a millisecond of the event times.
@@ -305,9 +317,6 @@ end
 
 function write_event!(cast::Cast, event::Event)
     write_append!(cast.write_handle) do io
-        # asciinema's player seems to require `\r\n` instead of just `\n`
-        # regex help: https://stackoverflow.com/a/32704
-        event_data = replace(event.event_data, r"(?<!\r)\n" => "\r\n")
         t = event.time + cast.delay*cast.events_written[]
         if cast.header.version == 3
             # Write intervals from rounded absolute times, so rounding errors do not accumulate
@@ -315,11 +324,23 @@ function write_event!(cast::Cast, event::Event)
             t = (t_ms - cast.last_time_ms[]) / 1000
             cast.last_time_ms[] = t_ms
         end
-        JSON3.write(io, (t, EVENT_CODES[event.type], event_data))
-        write(io, "\r\n")
+        write_event_line(io, t, event.type, normalize_newlines(event))
     end
     cast.events_written[] += 1
     return event.time
+end
+
+function normalize_newlines(event::Event)
+    event.type in (OutputEvent, InputEvent) || return event.event_data
+    # asciinema's player seems to require `\r\n` instead of just `\n`
+    # regex help: https://stackoverflow.com/a/32704
+    return replace(event.event_data, r"(?<!\r)\n" => "\r\n")
+end
+
+# `t` is written as given: the absolute time (v2) or the interval (v3)
+function write_event_line(io::IO, t, type::EventType, data::AbstractString)
+    JSON3.write(io, (t, EVENT_CODES[type], data))
+    write(io, "\r\n")
 end
 
 include("capture.jl")
