@@ -17,7 +17,8 @@ Saves the [`Cast`](@ref) to `output_path` as a gif (using [`agg`](https://github
 function save_gif(output_path, cast::Cast; font_size=28)
     mktempdir() do tmp
         input_path = joinpath(tmp, "input.cast")
-        save(input_path, cast)
+        # `v2_bytes`, since agg_jll 1.4.3 cannot read asciicast v3
+        write(input_path, v2_bytes(cast))
         # Larger font size to reduce blurriness:
         # https://github.com/asciinema/agg/issues/60#issuecomment-1807910643
         run(pipeline(`$(agg()) --font-size $(font_size) $input_path $output_path`; stdout=devnull, stderr=devnull))
