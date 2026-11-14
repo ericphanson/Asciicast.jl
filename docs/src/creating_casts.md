@@ -71,7 +71,7 @@ write_event!(cast, OutputEvent, "\nDone!")
 cast
 ```
 
-Such a `Cast` can be saved to a `.cast` file using [`Asciicast.save`](@ref). These files are JSON lines files, which can be read with `JSON3.read` with the `jsonlines=true` keyword argument. They can also be parsed with [`Asciicast.parse_cast`](@ref), which reads both v2 and v3 files. They can be played in the terminal or uploaded to <asciinema.org> with [asciinema](https://github.com/asciinema/asciinema), and converted to gifs with [agg](https://github.com/asciinema/agg). Note that Asciicast.jl does not upload or embed any casts, using a local player instead.
+Such a `Cast` can be saved to a `.cast` file using [`Asciicast.save`](@ref). These files are JSON lines files, so they can be read with `JSON.parsefile(path; jsonlines=true)` from [JSON.jl](https://github.com/JuliaIO/JSON.jl), except for v3 files containing comment lines (lines starting with `#`). They can also be parsed with [`Asciicast.parse_cast`](@ref), which reads both v2 and v3 files, skips comments, and converts v3 event intervals to times since the start. They can be played in the terminal or uploaded to <asciinema.org> with [asciinema](https://github.com/asciinema/asciinema), and converted to gifs with [agg](https://github.com/asciinema/agg). Note that Asciicast.jl does not upload or embed any casts, using a local player instead.
 
 See also: [Cast files](@ref).
 

@@ -1,6 +1,6 @@
 module Asciicast
 
-using JSON3, Dates, Base64
+using JSON, Dates, Base64
 using Logging
 import Random
 using REPL
@@ -178,11 +178,11 @@ function Cast(write_handle::Union{IO, AbstractString}=IOBuffer(), header::Header
 end
 
 function write_header(io::IO, header::Header)
-    JSON3.write(io, header.version == 3 ? write_header_v3(header) : write_header_v2(header))
+    JSON.json(io, header.version == 3 ? write_header_v3(header) : write_header_v2(header))
     println(io)
 end
 
-# NamedTuple of the non-`nothing` pairs, so JSON3 writes them in this order and omits the rest
+# NamedTuple of the non-`nothing` pairs, so they are written in this order and the rest are omitted
 function json_object(pairs...)
     kept = [Symbol(k) => v for (k, v) in pairs if v !== nothing]
     return NamedTuple{Tuple(first.(kept))}(Tuple(last.(kept)))
@@ -217,28 +217,28 @@ read_object(obj) = obj === nothing ? nothing : Object(string(k) => string(v) for
 read_field(obj, key, T) = (v = get(obj, key, nothing); v === nothing ? nothing : convert(T, v))
 
 function read_header_v2(obj)
-    env = read_object(get(obj, :env, nothing))
+    env = read_object(get(obj, "env", nothing))
     term_type = env === nothing ? nothing : pop!(env, "TERM", nothing)
-    return Header(; version=2, width=obj[:width], height=obj[:height],
-                  timestamp=read_field(obj, :timestamp, Int),
-                  duration=read_field(obj, :duration, Float64),
-                  idle_time_limit=read_field(obj, :idle_time_limit, Float64),
-                  command=read_field(obj, :command, String), title=read_field(obj, :title, String),
-                  env, theme=read_object(get(obj, :theme, nothing)),
+    return Header(; version=2, width=obj["width"], height=obj["height"],
+                  timestamp=read_field(obj, "timestamp", Int),
+                  duration=read_field(obj, "duration", Float64),
+                  idle_time_limit=read_field(obj, "idle_time_limit", Float64),
+                  command=read_field(obj, "command", String), title=read_field(obj, "title", String),
+                  env, theme=read_object(get(obj, "theme", nothing)),
                   term_type, term_version=nothing, tags=nothing)
 end
 
 function read_header_v3(obj)
-    term = obj[:term]
-    tags = get(obj, :tags, nothing)
-    return Header(; version=3, width=term[:cols], height=term[:rows],
-                  timestamp=read_field(obj, :timestamp, Int), duration=nothing,
-                  idle_time_limit=read_field(obj, :idle_time_limit, Float64),
-                  command=read_field(obj, :command, String), title=read_field(obj, :title, String),
-                  env=read_object(get(obj, :env, nothing)),
-                  theme=read_object(get(term, :theme, nothing)),
-                  term_type=read_field(term, :type, String),
-                  term_version=read_field(term, :version, String),
+    term = obj["term"]
+    tags = get(obj, "tags", nothing)
+    return Header(; version=3, width=term["cols"], height=term["rows"],
+                  timestamp=read_field(obj, "timestamp", Int), duration=nothing,
+                  idle_time_limit=read_field(obj, "idle_time_limit", Float64),
+                  command=read_field(obj, "command", String), title=read_field(obj, "title", String),
+                  env=read_object(get(obj, "env", nothing)),
+                  theme=read_object(get(term, "theme", nothing)),
+                  term_type=read_field(term, "type", String),
+                  term_version=read_field(term, "version", String),
                   tags=tags === nothing ? nothing : String[string(t) for t in tags])
 end
 
@@ -339,7 +339,7 @@ end
 
 # `t` is written as given: the absolute time (v2) or the interval (v3)
 function write_event_line(io::IO, t, type::EventType, data::AbstractString)
-    JSON3.write(io, (t, EVENT_CODES[type], data))
+    JSON.json(io, (t, EVENT_CODES[type], data))
     write(io, "\r\n")
 end
 
@@ -384,8 +384,8 @@ Empty lines and events with unknown event codes are skipped, as required by both
 """
 function parse_cast(io::IO)
     header_line = readline(io)
-    header_obj = JSON3.read(header_line)
-    version = get(header_obj, :version, nothing)
+    header_obj = JSON.parse(header_line)
+    version = get(header_obj, "version", nothing)
     header = if version == 2
         read_header_v2(header_obj)
     elseif version == 3
@@ -398,7 +398,7 @@ function parse_cast(io::IO)
     for line in eachline(io)
         isempty(strip(line)) && continue
         version == 3 && startswith(line, '#') && continue
-        event_time, code, data = JSON3.read(line)
+        event_time, code, data = JSON.parse(line)
         t = version == 3 ? t + event_time : Float64(event_time)
         haskey(CODE_EVENTS, code) || continue
         push!(events, Event(t, CODE_EVENTS[code], data))
