@@ -1,6 +1,6 @@
 module Asciicast
 
-using JSON3, Dates, StructTypes, Base64
+using JSON3, Dates, Base64
 using Logging
 import Random
 using REPL
@@ -29,23 +29,31 @@ const Object = Dict{String, String}
         idle_time_limit::Union{Float64, Nothing}=nothing
         command::Union{String, Nothing}=nothing
         title::Union{String, Nothing}=nothing
-        env::Union{$Object,Nothing}=$Object("SHELL" => get(ENV, "SHELL", "/bin/bash"),
-                                                "TERM" => get(ENV, "TERM", "xterm-256color"))
+        env::Union{$Object,Nothing}=$Object("SHELL" => get(ENV, "SHELL", "/bin/bash"))
         theme::Union{$Object,Nothing}=nothing
+        term_type::Union{String, Nothing}=get(ENV, "TERM", "xterm-256color")
+        term_version::Union{String, Nothing}=nothing
+        tags::Union{Vector{String}, Nothing}=nothing
     end
 
-The header of an asciicast file. The fields follow the
-[asciicast v2 header](https://docs.asciinema.org/manual/asciicast/v2/#header).
+The header of an asciicast file, for both the
+[v2](https://docs.asciinema.org/manual/asciicast/v2/#header) and
+[v3](https://docs.asciinema.org/manual/asciicast/v3/#header) formats.
+Fields set to `nothing` are omitted when the header is written.
 
-`version` selects the format used when a [`Cast`](@ref) is written: `2` (the default) or `3`
-([asciicast v3](https://docs.asciinema.org/manual/asciicast/v3/)).
-When writing v3, `width` and `height` are written as `term.cols` and `term.rows`,
-`theme` as `term.theme`, `env["TERM"]` (if present) as `term.type`, and `duration` is omitted
-(v3 has no such field).
+`version` selects the format used when a [`Cast`](@ref) is written: `2` (the default) or `3`.
+[`parse_cast`](@ref) sets it to the version of the file it reads.
 
-When [`parse_cast`](@ref) reads a v3 file, the same mapping is applied in reverse:
-`term.type` is stored in `env["TERM"]` if `env` has no `TERM` entry.
-Other v3 header fields (`term.version`, `tags`) are not represented and are dropped.
+The fields correspond to the two formats as follows:
+
+* `width` and `height` are `width` and `height` in v2, and `term.cols` and `term.rows` in v3.
+* `theme` is `theme` in v2, and `term.theme` in v3.
+* `term_type` is `term.type` in v3. v2 has no such field, so it is written as `env["TERM"]`
+  if `env` is not `nothing` and has no `TERM` entry, and read from `env["TERM"]`
+  (removing it from `env`).
+* `term_version` and `tags` exist only in v3, and are not written to v2 files.
+* `duration` exists only in v2, and is not written to v3 files.
+* The other fields have the same name in both formats.
 """
 Base.@kwdef struct Header
     version::Int=2
@@ -56,13 +64,14 @@ Base.@kwdef struct Header
     idle_time_limit::Union{Float64, Nothing}=nothing
     command::Union{String, Nothing}=nothing
     title::Union{String, Nothing}=nothing
-    env::Union{Object,Nothing}=Object("SHELL" => get(ENV, "SHELL", "/bin/bash"),
-                                               "TERM" => get(ENV, "TERM", "xterm-256color"))
+    # `TERM` is kept in `term_type` rather than here, so that v3 output does not
+    # contain it twice; the v2 writer adds it back.
+    env::Union{Object,Nothing}=Object("SHELL" => get(ENV, "SHELL", "/bin/bash"))
     theme::Union{Object,Nothing}=nothing
+    term_type::Union{String, Nothing}=get(ENV, "TERM", "xterm-256color")
+    term_version::Union{String, Nothing}=nothing
+    tags::Union{Vector{String}, Nothing}=nothing
 end
-
-StructTypes.StructType(::Type{Header}) = StructTypes.Struct()
-StructTypes.omitempties(::Type{Header}) = true
 
 """
     Asciicast.EventType
@@ -160,49 +169,66 @@ function Cast(write_handle::Union{IO, AbstractString}=IOBuffer(), header::Header
         mkpath(dirname(write_handle))
     end
     write!(write_handle) do io
-        if header.version == 3
-            JSON3.write(io, v3_header(header))
-        else
-            JSON3.write(io, header)
-        end
+        JSON3.write(io, header.version == 3 ? write_header_v3(header) : write_header_v2(header))
         println(io)
     end
     return Cast{typeof(write_handle)}(write_handle, header, start_time, Ref(0), Ref(0), delay, loop)
 end
 
-# Returns the v3 header JSON object corresponding to `header`
-function v3_header(header::Header)
-    term = Dict{String, Any}("cols" => header.width, "rows" => header.height)
-    if header.env !== nothing && haskey(header.env, "TERM")
-        term["type"] = header.env["TERM"]
-    end
-    header.theme !== nothing && (term["theme"] = header.theme)
-    obj = Dict{String, Any}("version" => 3, "term" => term)
-    for key in (:timestamp, :idle_time_limit, :command, :title, :env)
-        value = getfield(header, key)
-        value !== nothing && (obj[string(key)] = value)
-    end
-    return obj
+# NamedTuple of the non-`nothing` pairs, so JSON3 writes them in this order and omits the rest
+function json_object(pairs...)
+    kept = [Symbol(k) => v for (k, v) in pairs if v !== nothing]
+    return NamedTuple{Tuple(first.(kept))}(Tuple(last.(kept)))
 end
 
-# Returns a `Header` corresponding to the v3 header JSON object `obj`
-function header_from_v3(obj)
-    term = obj[:term]
-    env = get(obj, :env, nothing)
-    env = env === nothing ? nothing : Object(string(k) => string(v) for (k, v) in env)
-    term_type = get(term, :type, nothing)
-    if term_type !== nothing
-        env = something(env, Object())
-        get!(env, "TERM", string(term_type))
+function write_header_v2(header::Header)
+    env = header.env
+    if env !== nothing && header.term_type !== nothing && !haskey(env, "TERM")
+        env = copy(env)
+        env["TERM"] = header.term_type
     end
-    theme = get(term, :theme, nothing)
-    theme = theme === nothing ? nothing : Object(string(k) => string(v) for (k, v) in theme)
-    opt(key, T) = (v = get(obj, key, nothing); v === nothing ? nothing : convert(T, v))
+    return json_object("version" => 2, "width" => header.width, "height" => header.height,
+                       "timestamp" => header.timestamp, "duration" => header.duration,
+                       "idle_time_limit" => header.idle_time_limit, "command" => header.command,
+                       "title" => header.title, "env" => env, "theme" => header.theme)
+end
+
+function write_header_v3(header::Header)
+    term = json_object("cols" => header.width, "rows" => header.height,
+                       "type" => header.term_type, "version" => header.term_version,
+                       "theme" => header.theme)
+    return json_object("version" => 3, "term" => term, "timestamp" => header.timestamp,
+                       "idle_time_limit" => header.idle_time_limit, "command" => header.command,
+                       "title" => header.title, "env" => header.env, "tags" => header.tags)
+end
+
+read_object(obj) = obj === nothing ? nothing : Object(string(k) => string(v) for (k, v) in obj)
+read_field(obj, key, T) = (v = get(obj, key, nothing); v === nothing ? nothing : convert(T, v))
+
+function read_header_v2(obj)
+    env = read_object(get(obj, :env, nothing))
+    term_type = env === nothing ? nothing : pop!(env, "TERM", nothing)
+    return Header(; version=2, width=obj[:width], height=obj[:height],
+                  timestamp=read_field(obj, :timestamp, Int),
+                  duration=read_field(obj, :duration, Float64),
+                  idle_time_limit=read_field(obj, :idle_time_limit, Float64),
+                  command=read_field(obj, :command, String), title=read_field(obj, :title, String),
+                  env, theme=read_object(get(obj, :theme, nothing)),
+                  term_type, term_version=nothing, tags=nothing)
+end
+
+function read_header_v3(obj)
+    term = obj[:term]
+    tags = get(obj, :tags, nothing)
     return Header(; version=3, width=term[:cols], height=term[:rows],
-                  timestamp=opt(:timestamp, Int), duration=nothing,
-                  idle_time_limit=opt(:idle_time_limit, Float64),
-                  command=opt(:command, String), title=opt(:title, String),
-                  env, theme)
+                  timestamp=read_field(obj, :timestamp, Int), duration=nothing,
+                  idle_time_limit=read_field(obj, :idle_time_limit, Float64),
+                  command=read_field(obj, :command, String), title=read_field(obj, :title, String),
+                  env=read_object(get(obj, :env, nothing)),
+                  theme=read_object(get(term, :theme, nothing)),
+                  term_type=read_field(term, :type, String),
+                  term_version=read_field(term, :version, String),
+                  tags=tags === nothing ? nothing : String[string(t) for t in tags])
 end
 
 collect_bytes(cast::Cast) = collect_bytes(cast.write_handle)
@@ -327,8 +353,8 @@ end
 Returns a tuple consisting of a [`Header`](@ref) and vector of [`Event`](@ref)'s.
 
 Both asciicast v2 and v3 files are supported. For v3 files, event intervals are converted to
-times since the start of the recording, lines starting with `#` (comments) are skipped,
-and the header is converted as described in [`Header`](@ref).
+times since the start of the recording, and lines starting with `#` (comments) are skipped.
+See [`Header`](@ref) for how the header fields of each version are read.
 Empty lines and events with unknown event codes are skipped, as required by both specifications.
 """
 function parse_cast(io::IO)
@@ -336,9 +362,9 @@ function parse_cast(io::IO)
     header_obj = JSON3.read(header_line)
     version = get(header_obj, :version, nothing)
     header = if version == 2
-        JSON3.read(header_line, Header)
+        read_header_v2(header_obj)
     elseif version == 3
-        header_from_v3(header_obj)
+        read_header_v3(header_obj)
     else
         error("Unsupported asciicast version $(repr(version)); expected 2 or 3")
     end

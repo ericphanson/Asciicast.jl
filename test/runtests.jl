@@ -126,7 +126,8 @@ end
         @test header.height == 24
         @test header.timestamp == 1504467315
         @test header.title == "Demo"
-        @test header.env == Dict("SHELL" => "/bin/zsh", "TERM" => "xterm-256color")
+        @test header.env == Dict("SHELL" => "/bin/zsh")
+        @test header.term_type == "xterm-256color"
         @test header.theme === nothing
         @test [e.type for e in events] == [OutputEvent, OutputEvent, MarkerEvent, OutputEvent,
                                            ResizeEvent, OutputEvent, ExitEvent]
@@ -137,7 +138,7 @@ end
         @test events[5].event_data == "90x30"
         @test events[end].event_data == "0"
 
-        # Theme is read from `term.theme`; an explicit `TERM` in `env` is kept
+        # `term` fields and `tags` are read; an explicit `TERM` in `env` is kept
         theme = Dict("fg" => "#d0d0d0", "bg" => "#212121", "palette" => join(fill("#151515", 8), ":"))
         header_line = JSON3.write(Dict("version" => 3, "tags" => ["demo"],
             "term" => Dict("cols" => 100, "rows" => 50, "type" => "xterm", "version" => "VTE(7802)", "theme" => theme),
@@ -146,12 +147,16 @@ end
         @test (header.width, header.height) == (100, 50)
         @test header.theme == theme
         @test header.env == Dict("TERM" => "screen")
+        @test header.term_type == "xterm"
+        @test header.term_version == "VTE(7802)"
+        @test header.tags == ["demo"]
         @test header.idle_time_limit == 2.0
         @test isempty(events)
 
         # Minimal header
         header, events = parse_cast(IOBuffer("""{"version": 3, "term": {"cols": 10, "rows": 5}}\n[1.0, "o", "a"]\n"""))
         @test (header.width, header.height, header.env, header.timestamp) == (10, 5, nothing, nothing)
+        @test (header.term_type, header.term_version, header.tags, header.theme) == (nothing, nothing, nothing, nothing)
         @test only(events) == Event(1.0, OutputEvent, "a")
 
         # v2 files with marker and resize events; times are absolute
@@ -185,6 +190,7 @@ end
         @test header_obj.term.theme.fg == "#ffffff"
         @test header_obj.title == "t"
         @test !haskey(header_obj, :width) && !haskey(header_obj, :height) && !haskey(header_obj, :theme)
+        @test !haskey(header_obj.env, :TERM)
         # Intervals, not absolute times
         @test [JSON3.read(l)[1] for l in lines[2:end]] == [0.25, 0.75, 0.0, 2.5]
         @test [JSON3.read(l)[2] for l in lines[2:end]] == ["o", "i", "m", "x"]
@@ -246,6 +252,49 @@ end
             Asciicast.save_gif(gif, c3)
             @test filesize(gif) > 0
         end
+    end
+
+    @testset "Header reading and writing" begin
+        header_line(header) = (io = IOBuffer(); Cast(io, header); String(take!(seekstart(io))))
+        reparse(header) = first(parse_cast(IOBuffer(header_line(header))))
+
+        # The default v2 header is written exactly as before `term_type` was added
+        header = withenv("TERM" => "xterm-256color", "SHELL" => "/bin/bash") do
+            Header(; timestamp=1)
+        end
+        @test header_line(header) == """{"version":2,"width":80,"height":24,"timestamp":1,"env":{"TERM":"xterm-256color","SHELL":"/bin/bash"}}\n"""
+        @test header_line(Header(; timestamp=1, env=nothing)) == """{"version":2,"width":80,"height":24,"timestamp":1}\n"""
+
+        # v2: `term_type` is stored as `env["TERM"]`, unless `env` has its own `TERM`
+        h = reparse(Header(; term_type="xterm", env=Dict("SHELL" => "/bin/sh")))
+        @test (h.term_type, h.env) == ("xterm", Dict("SHELL" => "/bin/sh"))
+        h = reparse(Header(; term_type="xterm", env=Dict("TERM" => "screen")))
+        @test (h.term_type, h.env) == ("screen", Dict{String, String}())
+
+        # v2 has no `term_version` or `tags`
+        line = header_line(Header(; term_version="1.0", tags=["a"], duration=1.5))
+        @test !contains(line, "tags") && !contains(line, "1.0") && contains(line, "duration")
+
+        # v3 files round-trip through `parse_cast` and `Cast`
+        theme = Dict("fg" => "#d0d0d0", "bg" => "#212121", "palette" => join(fill("#151515", 8), ":"))
+        v3 = JSON3.write(Dict("version" => 3, "tags" => ["demo", "test"], "timestamp" => 1,
+            "idle_time_limit" => 2.5, "command" => "julia", "title" => "T",
+            "env" => Dict("SHELL" => "/bin/zsh"),
+            "term" => Dict("cols" => 100, "rows" => 50, "type" => "xterm", "version" => "VTE(7802)", "theme" => theme)))
+        header, _ = parse_cast(IOBuffer(v3 * "\n"))
+        @test JSON3.read(header_line(header), Dict) == JSON3.read(v3, Dict)
+        h = reparse(header)
+        @test all(getfield(h, k) == getfield(header, k) for k in fieldnames(Header))
+        h = reparse(Header(; version=3, duration=1.5))
+        @test h.duration === nothing && h.version == 3
+
+        # Converting v3 to v2 for the player keeps `term_type` (as `env["TERM"]`)
+        cast = Cast(IOBuffer(), header)
+        write_event!(cast, Event(0.5, OutputEvent, "a"))
+        h2, events2 = parse_cast(IOBuffer(Asciicast.v2_bytes(cast)))
+        @test h2.version == 2
+        @test (h2.term_type, h2.env, h2.theme, h2.tags) == ("xterm", Dict("SHELL" => "/bin/zsh"), theme, nothing)
+        @test events2 == [Event(0.5, OutputEvent, "a")]
     end
 
     @testset "README updated" begin
