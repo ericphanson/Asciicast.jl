@@ -304,6 +304,141 @@ end
         @test events2 == [Event(0.5, OutputEvent, "a")]
     end
 
+    # Files written by other tools; see test/casts/README.md for their sources
+    @testset "Casts from other tools" begin
+        castdir = joinpath(@__DIR__, "casts")
+        palette = "#151515:#ac4142:#7e8e50:#e5b567:#6c99bb:#9f4e85:#7dd6cf:#d0d0d0:#505050:#ac4142:#7e8e50:#e5b567:#6c99bb:#9f4e85:#7dd6cf:#f5f5f5"
+        # Expected values, read from the files by hand. Header fields not listed are `nothing`.
+        expected = Dict(
+            "asciinema-edit-v2.cast" => (; version=2, width=208, height=59, timestamp=1530639832,
+                term_type="xterm-256color", env=Dict("SHELL" => "/bin/zsh"),
+                counts=Dict(OutputEvent => 78), markers=String[],
+                first=(0.258703, OutputEvent, "\e]7;file://cirocosta.local/Users/cirocosta/Development/go/src/github.com/cirocosta/asciinema-edit\a"),
+                last=(13.411091, OutputEvent, "\e]2;exit\a\e]1;exit\a")),
+            "termtosvg-awesome-v2.cast" => (; version=2, width=82, height=19,
+                theme=Dict("fg" => "#839496", "bg" => "#002b36", "palette" => "#073642:#dc322f:#859900:#b58900:#268bd2:#d33682:#2aa198:#eee8d5:#002b36:#cb4b16:#586e75:#657b83:#839496:#6c71c4:#93a1a1:#fdf6e3"),
+                counts=Dict(OutputEvent => 94), markers=String[],
+                first=(0.0, OutputEvent, "\e[0;31mnico \e[0;34m~\e[0;31m \$ \e[0m"),
+                last=(26.349826, OutputEvent, "")),
+            # Extra header fields (`sessionId`, `toolVersion`) are ignored
+            "agent-tty-v2.cast" => (; version=2, width=100, height=30, timestamp=1777491553,
+                title="01KQDC1A7M9FN8EVETNKPJBDDT", term_type="xterm-256color", env=Dict{String, String}(),
+                counts=Dict(OutputEvent => 8, MarkerEvent => 1, ResizeEvent => 1), markers=["issue-63-proof"],
+                first=(0.0, OutputEvent, "\e[?2004hbash-5.1\$ "),
+                last=(9.723, ResizeEvent, "100x30")),
+            "server-full-v2.cast" => (; version=2, width=96, height=26, timestamp=1506410422,
+                command="/bin/bash -l", title="bashing :)", idle_time_limit=2.5,
+                term_type="screen-256color", env=Dict("SHELL" => "/bin/zsh"),
+                theme=Dict("fg" => "#aaaaaa", "bg" => "#bbbbbb", "palette" => palette),
+                counts=Dict(OutputEvent => 3, ResizeEvent => 1, InputEvent => 1), markers=String[],
+                first=(1.234567, OutputEvent, "foo bar"),
+                last=(8.456789, OutputEvent, "żółć jaźń")),
+            # v3 files may repeat `term.type` as `env["TERM"]`
+            "server-full-v3.cast" => (; version=3, width=96, height=26, timestamp=1744302022,
+                command="/bin/bash -l", title="bashing :)", idle_time_limit=2.5,
+                term_type="xterm-ghostty", term_version="ghostty 1.1.3-889478f-nix",
+                env=Dict("TERM" => "xterm-ghostty", "SHELL" => "/usr/bin/fish"),
+                theme=Dict("fg" => "#aaaaaa", "bg" => "#bbbbbb", "palette" => palette),
+                counts=Dict(OutputEvent => 3, ResizeEvent => 1, InputEvent => 1), markers=String[],
+                first=(1.234567, OutputEvent, "foo bar"),
+                last=(10.370343, OutputEvent, "żółć jaźń")),
+            "server-comments-v3.cast" => (; version=3, width=96, height=26,
+                counts=Dict(OutputEvent => 4), markers=String[],
+                first=(1.234567, OutputEvent, "foo bar"),
+                last=(9.481455, OutputEvent, "bye!")),
+            "tagfill-v3.cast" => (; version=3, width=80, height=24, timestamp=1787768995,
+                idle_time_limit=1.5, command="./demo/demo.sh", env=Dict("SHELL" => "/usr/bin/bash"),
+                counts=Dict(OutputEvent => 23, ExitEvent => 1), markers=String[],
+                first=(0.005, OutputEvent, "\r\n\e[1;36m\$ du -sh demo/Music && find demo/Music -type f | wc -l\e[0m\r\n"),
+                last=(90.63, ExitEvent, "0")),
+            "oobscan-v3.cast" => (; version=3, width=80, height=30, timestamp=1793737262,
+                idle_time_limit=1.5, term_type="xterm-256color", term_version="xterm.js(6.1.0-beta.304)",
+                command="/tmp/oobscan-demo-wrapper.sh 'oobscan scan --disable-logins 10.0.10.0/24 10.0.20.0/23' '<redacted>'",
+                env=Dict("SHELL" => "/bin/zsh"),
+                counts=Dict(OutputEvent => 21, ExitEvent => 1), markers=String[],
+                first=(0.353, OutputEvent, "\e[1;32mroot@bmc-lab\e[0m:\e[1;34m~\e[0m# oobscan scan --disable-logins 10.0.10.0/24 10.0.20.0/23\r\n"),
+                last=(36.611, ExitEvent, "0")),
+            "scenetake-basic-v3.cast" => (; version=3, width=80, height=24, timestamp=1702967308,
+                title="Basic Demo", term_type="xterm-256color", env=Dict("SHELL" => "bash"),
+                theme=Dict("fg" => "#d0d0d0", "bg" => "#282c34", "palette" => palette),
+                tags=["st:font-size=16", "st:font-family=ui-monospace, \"Cascadia Mono\", \"Cascadia Code\", \"JetBrains Mono\", \"Noto Sans Mono\", SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", monospace"],
+                counts=Dict(OutputEvent => 184, MarkerEvent => 2, ExitEvent => 1),
+                markers=["Name of the step", "Coloring stdout"],
+                first=(0.9, OutputEvent, "\$ "),
+                last=(16.761, ExitEvent, "0")),
+        )
+        @test sort(collect(keys(expected))) == sort(filter(endswith(".cast"), readdir(castdir)))
+
+        header_fields = (:width, :height, :timestamp, :duration, :idle_time_limit, :command, :title,
+                         :env, :theme, :term_type, :term_version, :tags)
+        codes = Dict("o" => OutputEvent, "i" => InputEvent, "m" => MarkerEvent, "r" => ResizeEvent, "x" => ExitEvent)
+        # `write_event!` writes a lone `\n` as `\r\n`
+        crlf(s) = replace(s, r"(?<!\r)\n" => "\r\n")
+        same_events(a, b; atol) = length(a) == length(b) &&
+            all(x.type == y.type && crlf(x.event_data) == crlf(y.event_data) &&
+                isapprox(x.time, y.time; atol) for (x, y) in zip(a, b))
+        function rewrite(header, events)
+            io = IOBuffer()
+            cast = Cast(io, header)
+            foreach(e -> write_event!(cast, e), events)
+            return parse_cast(seekstart(io))
+        end
+        # A `Cast` over the file's own bytes, so `show` and `v2_bytes` see the file as written
+        file_cast(bytes, header) = Asciicast.Cast{IOBuffer}(IOBuffer(bytes), header, 0.0, Ref(0), Ref(0), 0.0, false)
+
+        @testset "$name" for (name, exp) in expected
+            path = joinpath(castdir, name)
+            header, events = open(parse_cast, path)
+
+            @test header.version == exp.version
+            for k in header_fields
+                @test getfield(header, k) == get(exp, k, nothing)
+            end
+            @test Dict(t => count(e -> e.type == t, events) for t in unique(e.type for e in events)) == exp.counts
+            @test [e.event_data for e in events if e.type == MarkerEvent] == exp.markers
+            @test (events[1].type, events[1].event_data) == exp.first[2:3]
+            @test (events[end].type, events[end].event_data) == exp.last[2:3]
+            @test events[1].time ≈ exp.first[1]
+            @test events[end].time ≈ exp.last[1]
+
+            # Independent reading of the raw lines
+            lines = filter(l -> !isempty(strip(l)) && !(exp.version == 3 && startswith(l, "#")), readlines(path))
+            @test JSON3.read(lines[1]).version == exp.version
+            raw = [JSON3.read(l) for l in lines[2:end]]
+            times = exp.version == 3 ? cumsum(Float64[r[1] for r in raw]) : Float64[r[1] for r in raw]
+            @test length(events) == length(raw)
+            @test [e.time for e in events] ≈ times
+            @test [e.type for e in events] == [codes[r[2]] for r in raw]
+            @test [e.event_data for e in events] == [String(r[3]) for r in raw]
+
+            # Round trip in the same version; v3 times are rounded to milliseconds when written
+            header2, events2 = rewrite(header, events)
+            @test header2.version == header.version
+            for k in header_fields
+                @test getfield(header2, k) == getfield(header, k)
+            end
+            @test same_events(events2, events; atol=exp.version == 3 ? 0.0005 + 1e-9 : 0.0)
+
+            cast = file_cast(read(path), header)
+            if exp.version == 3
+                h2, e2 = parse_cast(IOBuffer(Asciicast.v2_bytes(cast)))
+                @test h2.version == 2
+                @test (h2.width, h2.height, h2.timestamp, h2.idle_time_limit, h2.command, h2.title, h2.theme) ==
+                      (header.width, header.height, header.timestamp, header.idle_time_limit, header.command, header.title, header.theme)
+                # v2 stores the terminal type only in `env["TERM"]`, which a v3 `env` may already set
+                env = header.env
+                @test h2.term_type == (env === nothing ? nothing : get(env, "TERM", header.term_type))
+                @test same_events(e2, events; atol=1e-9)
+            end
+            if name in ("asciinema-edit-v2.cast", "oobscan-v3.cast")
+                html = sprint(show, MIME"text/html"(), cast)
+                @test contains(html, "AsciinemaPlayer.create")
+                b64 = match(r"base64,([^']*)'", html)[1]
+                @test same_events(parse_cast(IOBuffer(base64decode(b64)))[2], events; atol=1e-9)
+            end
+        end
+    end
+
     @testset "README updated" begin
         # Test that the README functionality works, and the README is up-to-date:
         tmp = mktempdir()

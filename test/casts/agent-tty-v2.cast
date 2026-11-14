@@ -1,0 +1,11 @@
+{"version":2,"width":100,"height":30,"timestamp":1777491553,"title":"01KQDC1A7M9FN8EVETNKPJBDDT","sessionId":"01KQDC1A7M9FN8EVETNKPJBDDT","env":{"TERM":"xterm-256color"},"toolVersion":"0.1.1-beta.4"}
+[0,"o","\u001b[?2004hbash-5.1$ "]
+[1.199,"o","printf 'hello issue 63\\n'\r\n\u001b[?2004l\r"]
+[1.2,"o","hello issue 63\r\n\u001b[?2004hbash-5.1$ \u001b[?2004l\r"]
+[1.201,"o","\u001b[?2004hbash-5.1$ "]
+[2.688,"o","echo typed issue 63\r\n\u001b[?2004l\rtyped issue 63\r\n\u001b[?2004hbash-5.1$ "]
+[5.094,"o","\u001b[7mecho pasted issue 63\u001b[27m"]
+[6.268,"o","\rbash-5.1$ echo pasted issue 63\r\n\u001b[?2004l\rpasted issue 63\r\n\u001b[?2004hbash-5.1$ "]
+[8.61,"m","issue-63-proof"]
+[9.722,"o","\r\u001b[Kbash-5.1$ "]
+[9.723,"r","100x30"]
